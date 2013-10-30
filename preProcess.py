@@ -1,34 +1,58 @@
-from __future__ import division
 import glob
 import nltk
-import re
+import itertools
 
 #put filenames in a list
-listOfFiles = glob.glob('./collection/*.txt')
+class PreProcess:
 
-# stemming function, could also use porter or Lancaster stemmer
-def stem(word):
-    regexp = r'^(.*?)(ing|ly|ed|ious|ies|ive|es|s|ment)?$'
-    s, suffix = re.findall(regexp, word)[0]
-    return s
+	def __init__(self,lancaster = False, lemmatize = False):
+		self.listOfFiles = glob.glob('collection/*.txt')[0:1]
+		self.lancaster = lancaster
+		self.lemmatize = lemmatize
+		self.tokens = dict()
 
-#create dict, key = filename, value = bag of words
-files = dict()
-tokens = dict()
-stemmedTokens = dict()
-freqDist = dict()
-# first tokenize, then lower and stem:
-for file in range(len(listOfFiles)):
-	text = open(listOfFiles[file])
-	filename = listOfFiles[file]
-	tokens[filename] = nltk.word_tokenize(text.read())
-	stemmedTokens[filename] = [stem(t.lower()) for t in tokens[filename]]
-	print file #for progress
-	#Now create dictionary of frequency distributions of words:
+	"""
+	Tokenize a list of files
+	"""
+	def tokenize(self):
+		tokens = dict()
+		for filename in self.listOfFiles:
+			try:
+				text = open(filename, 'r').read().decode('utf-8')
+			except UnicodeDecodeError:
+				text = open(filename, 'r').read().decode('iso-8859-1')
+			w = [nltk.word_tokenize(t) for t in nltk.sent_tokenize(text)]
+			self.tokens[self.listOfFiles.index(filename)] = list(itertools.chain(*w))
 
-	# nltk.FreqDis(t) for t in stemmedTokens[filename]
+	"""
+	Stems a list of lists of words, if Lancaster is set to true it uses Lancaster else Porter
+	"""
+	def stem(self):
+		if self.lancaster:
+			st = nltk.LancasterStemmer()
+		else:
+			st = nltk.PorterStemmer()
 
+		stemmedTokens = dict()
+		for filename,words in self.tokens.iteritems():
+			fileStemmed = []
+			for word in words:
+				fileStemmed.append(st.stem(word))
+			stemmedTokens[filename] = fileStemmed
+		self.tokens = stemmedTokens
 
-#example: 
-# print stemmedTokens['./collection/CSIRO084-05928091.txt']
+	"""
+	If lemmatize is set to true, this function also lemmatizes
+	"""
+	def normalize(self):
+		wnl = nltk.WordNetLemmatizer()
+		normalizedTokens = dict()
+		for filename,words in self.tokens.iteritems():
+			fileNormalized = []
+			for word in words:
+				if self.lemmatize:
+					word = wnl.lemmatize(word)
+				fileNormalized.append(word.lower())
+			normalizedTokens[filename] = fileNormalized
+		self.tokens = normalizedTokens
 
