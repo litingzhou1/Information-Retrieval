@@ -1,21 +1,24 @@
 class Index:
+	def __init__(self):
+		self.lengthOfFiles = dict()
+		self.index = dict()
 	"""
 	very basic version of index
-	Does not include frequency of occurence, instead keeps appending its ID to the filelist.
-
 	Discuss what we should do here
 	"""
 	def createIndex(self,tokens):
 		index = dict()
-		for filename,line in tokens.iteritems():
-			for word in line:
+		for filename,words in tokens.iteritems():
+			self.lengthOfFiles[filename] = len(words)
+			for word in words:
 				if word in index:
-					index[word][0] += 1
-					index[word][1].append(filename)
+					if filename in index[word]:
+						index[word][filename] += 1
+					else:
+						index[word][filename] = 1
 				else:
-					index[word] = []
-					index[word].append(1)
-					index[word].append([filename])
-		return index
+					index[word] = dict()
+					index[word][filename] = 1
+		self.index = index
 
 	

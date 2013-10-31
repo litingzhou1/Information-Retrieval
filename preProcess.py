@@ -6,7 +6,7 @@ import itertools
 class PreProcess:
 
 	def __init__(self,lancaster = False, lemmatize = False):
-		self.listOfFiles = glob.glob('collection/*.txt')[0:1]
+		self.listOfFiles = glob.glob('collection/*.txt')
 		self.lancaster = lancaster
 		self.lemmatize = lemmatize
 		self.tokens = dict()
