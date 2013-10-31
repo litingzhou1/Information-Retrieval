@@ -6,7 +6,6 @@ import itertools
 class PreProcess:
 
 	def __init__(self,lancaster = False, lemmatize = False):
-		self.listOfFiles = glob.glob('collection/*.txt')
 		self.lancaster = lancaster
 		self.lemmatize = lemmatize
 		self.tokens = dict()
@@ -15,6 +14,7 @@ class PreProcess:
 	Tokenize a list of files
 	"""
 	def tokenize(self):
+		self.listOfFiles = glob.glob('collection/*.txt')
 		tokens = dict()
 		for filename in self.listOfFiles:
 			try:
@@ -22,7 +22,7 @@ class PreProcess:
 			except UnicodeDecodeError:
 				text = open(filename, 'r').read().decode('iso-8859-1')
 			w = [nltk.word_tokenize(t) for t in nltk.sent_tokenize(text)]
-			self.tokens[self.listOfFiles.index(filename)] = list(itertools.chain(*w))
+			self.tokens[filename[11:-4]] = list(itertools.chain(*w))
 
 	"""
 	Stems a list of lists of words, if Lancaster is set to true it uses Lancaster else Porter
@@ -55,4 +55,13 @@ class PreProcess:
 				fileNormalized.append(word.lower())
 			normalizedTokens[filename] = fileNormalized
 		self.tokens = normalizedTokens
+
+	def filterStopwords(self):
+		stopwords = nltk.corpus.stopwords.words('english')
+		filteredTokens = dict()
+		for filename,words in self.token.iteritems():
+			fileFiltered = [w for w in words if w.lower() not in stopwords]
+			filteredTokens[filename] = fileFiltered
+		self.tokens = filteredTokens
+
 
