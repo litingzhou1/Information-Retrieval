@@ -5,9 +5,9 @@ from math import log
 """
 class Retrieval:
 
-	def __init__(self, index, corpus_size):
+	def __init__(self, index, corpus_cardinality):
 		self.index = index
-		self.corpus_size = corpus_size
+		self.N = corpus_cardinality
 
 	def TFIDF(self, query):
 		"""	The Term Frequency * Inverse Document Frequency score for a query (string list) in a document """
@@ -15,7 +15,7 @@ class Retrieval:
 		docs = set.intersection(*[set(self.index[term].keys()) for term in query])
 		score = dict.fromkeys(docs, 0)
 		for term in query:
-			idf = log(self.corpus_size / len(self.index[term]))
+			idf = log(self.N / len(self.index[term]))
 			for doc, tf in self.index[term].items():
 				if doc in docs:
 					score[doc] += (1 + log(tf)) * idf

@@ -1,22 +1,18 @@
 from preProcess import PreProcess
 from index import Index
-from retrieval import Retrieval
 import cPickle as pickle
-import glob
 
-if __name__ == "__main__":
-	files = glob.glob('collection/*.txt')
-	words = PreProcess(files)
+if __name == "__main__":
+	words = PreProcess()
 	try:
 		with open('tokens.p') as tokenfile:
 			words.tokens = pickle.load(tokenfile)
 	except IOError:
 		words.tokenize()
-		words.normalize()
-		words.stem()
+		# words.normalize()
+		# words.stem()
 		pickle.dump(words.tokens,open("tokens.p","wb"))
 
-	
 	index = Index()
 	try:
 		with open('index.p') as indexfile:
@@ -25,8 +21,9 @@ if __name__ == "__main__":
 		index.createIndex(words.tokens)
 		pickle.dump(index.index,open("index.p","wb"))
 
-	ret = Retrieval(index.index, len(files))
-	print ret.TFIDF([u'a'])
+	print "Total number of tokens: %i" % sum(words.tokens.values())
+	print "Total number of unique tokens %i" % len(index.index)
+	print "Total number of unique tokens %i" % sum(index["of"].values())
 
-	
+
 
