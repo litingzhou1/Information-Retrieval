@@ -7,6 +7,7 @@ class PreProcess:
 
 	def __init__(self,lancaster = False, lemmatize = False):
 		self.listOfFiles = glob.glob('collection/*.txt')
+		self.noOfFiles = len(self.listOfFiles)
 		self.lancaster = lancaster
 		self.lemmatize = lemmatize
 		self.tokens = dict()

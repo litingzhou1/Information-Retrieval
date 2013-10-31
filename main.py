@@ -1,5 +1,6 @@
 from preProcess import PreProcess
 from index import Index
+from retrieval import Retrieval
 import cPickle as pickle
 
 if __name__ == "__main__":
@@ -21,6 +22,9 @@ if __name__ == "__main__":
 	except IOError:
 		index.createIndex(words.tokens)
 		pickle.dump(index.index,open("index.p","wb"))
+
+	ret = Retrieval(index.index, words.noOfFiles)
+	print ret.TFIDF([u'a'])
 
 	
 
