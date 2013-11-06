@@ -5,18 +5,15 @@ import cPickle as pickle
 import glob
 import argparse
 
-def loadPickle(fname, buildfunc, nopickle):
+def loadPickle(fname, nopickle):
 	""" If `nopickle` is true or loading from `fname` failes, run `buildfunc`  """
 	if nopickle:
-		return buildfunc()
+		return None
 	try:
 		with open(fname) as f:
 			return pickle.load(f)
 	except IOError:
-		b =  buildfunc()
-		pickle.dump(b ,open(fname,"wb"))
-		return b
-	
+		return None
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
@@ -24,11 +21,15 @@ if __name__ == "__main__":
 	args = parser.parse_args()
 
 	files = glob.glob('collection/*.txt')
-	words = PreProcess(files)
-	index = Index()
+	words = PreProcess(files,loadPickle('tokens.p',args.nopickle))
+	index = Index(loadPickle('index.p',args.nopickle))
 
-	words.tokens = loadPickle('tokens.p', lambda: words.createTokens(), args.nopickle)
-	index.index = loadPickle('index.p', lambda: index.createIndex(words.tokens) , args.nopickle)
+	if not words.tokens: 
+		words.tokenize()
+		words.normalize()
+		words.stem()
+	if not index.index:
+		index.createIndex(words.tokens)
 
 	ret = Retrieval(index.index, len(files))
 	print ret.TFIDF([u'a'])
