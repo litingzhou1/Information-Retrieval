@@ -10,6 +10,12 @@ class PreProcess:
 		self.lemmatize = lemmatize
 		self.tokens = dict()
 
+	def makeTokens(self):
+		self.tokenize()
+		self.normalize()
+		self.stem()
+		return self.tokens
+
 	"""
 	Tokenize a list of files
 	"""

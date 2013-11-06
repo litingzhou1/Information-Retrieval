@@ -19,6 +19,6 @@ class Index:
 				else:
 					index[token] = dict()
 					index[token][filename] = 1
-		self.index = index
+		return index
 
 	
