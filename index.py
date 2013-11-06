@@ -9,7 +9,7 @@ class Index:
 	def createIndex(self,tokens):
 		index = dict()
 		for filename,tokens in tokens.iteritems():
-			self.lengthOfFiles[filename] = len(words)
+			self.lengthOfFiles[filename] = len(tokens)
 			for token in tokens:
 				if token in index:
 					if filename in index[token]:
