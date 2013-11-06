@@ -10,7 +10,7 @@ class PreProcess:
 		self.lemmatize = lemmatize
 		self.tokens = dict()
 
-	def makeTokens(self):
+	def createTokens(self):
 		self.tokenize()
 		self.normalize()
 		self.stem()
