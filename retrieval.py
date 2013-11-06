@@ -1,4 +1,3 @@
-from __future__ import division
 from math import log
 """
 	Finding relevant documents based on a search query
@@ -15,7 +14,7 @@ class Retrieval:
 		docs = set.intersection(*[set(self.index[term].keys()) for term in query])
 		score = dict.fromkeys(docs, 0)
 		for term in query:
-			idf = log(self.N / len(self.index[term]))
+			idf = log(self.N / float(len(self.index[term])))
 			for doc, tf in self.index[term].items():
 				if doc in docs:
 					score[doc] += (1 + log(tf)) * idf
