@@ -28,8 +28,8 @@ if __name__ == "__main__":
 	if not documents: 
 		documents = PreProcess(files)
 		documents.tokenize()
-		documents.normalize()
-		documents.stem()
+		# documents.normalize()
+		# documents.stem()
 		pickle.dump(documents,open('documents.p',"wb"))
 	if not index:
 		index = Index()
