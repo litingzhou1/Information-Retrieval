@@ -14,7 +14,7 @@ class Retrieval:
 		"""	The Term Frequency * Inverse Document Frequency score for a query (string list) in a document """
 		# Take the documents in which all the query terms appear
 		docs = set.intersection(*[set(self.index[term].keys()) for term in query])
-		score = dict.fromkeys(docs, 0)
+		score = dict.fromkeys(lengthOfFiles.keys(), 0)
 		for term in query:
 			idf = log(self.N / float(len(self.index[term])))
 			for doc, tf in self.index[term].items():
@@ -26,10 +26,11 @@ class Retrieval:
 		"""	The Okapi BM25 score for a query (string list) in a document """
 		# Take the documents in which all the query terms appear
 		docs = set.intersection(*[set(self.index[term].keys()) for term in query])
-		score = dict.fromkeys(docs, 0)
+		score = dict.fromkeys(lengthOfFiles.keys(), 0)
 		for term in query:
 			idf = log(self.N / float(len(self.index[term])))
 			for doc, tf in self.index[term].items():
 				if doc in docs:
 					score[doc] += idf * (((k+1) * tf) / (k*((1-b) + b*(self.lengthOfFiles[doc]/self.avgFileLength)) + tf))
+
 		return score
