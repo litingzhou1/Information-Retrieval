@@ -22,6 +22,7 @@ class PreProcess:
 				text = open(filename, 'r').read().decode('iso-8859-1')
 			w = [nltk.word_tokenize(t) for t in nltk.sent_tokenize(text)]
 			self.tokens[filename[11:-4]] = list(itertools.chain(*w))
+			# self.tokens = map(filter(lambda word: word not in ',-()', tokens), self.tokens)
 
 	"""
 	Stems a list of lists of words, if Lancaster is set to true it uses Lancaster else Porter
