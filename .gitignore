@@ -1,3 +1,4 @@
 *.pyc
 *.p
 trec_eval-8.1
+*.txt

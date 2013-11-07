@@ -5,6 +5,7 @@ from statistics import Statistics
 import cPickle as pickle
 import glob
 import argparse
+import operator
 
 def loadPickle(fname):
 	""" If `nopickle` is true or loading from `fname` failes, run `buildfunc`  """
@@ -45,13 +46,13 @@ if __name__ == "__main__":
 		with open(args.retrieval+'.txt', 'w') as f:
 			# run query number 6
 			docScores = ret.TFIDF('sustainable ecosystems'.split())
-			for rank, (doc, score) in enumerate(sorted(docScores.iteritems(), key=operator.itemgetter(1))):
-				f.writeline("6 0 {0} {1} {2} {3}".format(doc, rank, score, args.retrieval))
+			for rank, (doc, score) in enumerate(sorted(docScores.iteritems(), key=operator.itemgetter(1),reverse=True)):
+				f.write("6 0 {0} {1} {2} {3}\n".format(doc, rank+1, score, args.retrieval))
 
 			# run query number 7
 			docScores = ret.TFIDF('air guitar textile sensors'.split())
-			for rank, (doc, score) in enumerate(sorted(docScores.iteritems(), key=operator.itemgetter(1))):
-				f.writeline("7 0 {0} {1} {2} {3}".format(doc, rank, score, args.retrieval))
+			for rank, (doc, score) in enumerate(sorted(docScores.iteritems(), key=operator.itemgetter(1), reverse=True)):
+				f.write("7 0 {0} {1} {2} {3}\n".format(doc, rank+1, score, args.retrieval))
 
 
 
