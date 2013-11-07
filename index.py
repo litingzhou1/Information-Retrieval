@@ -1,7 +1,7 @@
 class Index:
-	def __init__(self, index=dict()):
+	def __init__(self):
 		self.lengthOfFiles = dict()
-		self.index = index
+		self.index = dict()
 	"""
 	very basic version of index
 	Discuss what we should do here

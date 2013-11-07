@@ -4,11 +4,11 @@ import itertools
 #put filenames in a list
 class PreProcess:
 
-	def __init__(self, files, lancaster = False, lemmatize = False, tokens = dict()):
+	def __init__(self, files, lancaster = False, lemmatize = False):
 		self.listOfFiles = files
 		self.lancaster = lancaster
 		self.lemmatize = lemmatize
-		self.tokens = tokens
+		self.tokens = dict()
 
 	"""
 	Tokenize a list of files
