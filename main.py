@@ -7,7 +7,7 @@ import glob
 import argparse
 
 def loadPickle(fname):
-	""" Load pickle variable, except if loading from `fname` failes, then return None  """
+	""" If `nopickle` is true or loading from `fname` failes, run `buildfunc`  """
 	try:
 		with open(fname) as f:
 			return pickle.load(f)
@@ -22,15 +22,17 @@ if __name__ == "__main__":
 	args = parser.parse_args()
 
 	files = glob.glob('collection/*.txt')
-	documents = PreProcess(files) if args.nopickle else loadPickle('documents.p')
-	index = Index() if args.nopickle else loadPickle('index.p')
+	documents = None if args.nopickle else loadPickle('documents.p')
+	index = None if args.nopickle else loadPickle('index.p')
 
-	if not documents.tokens: 
+	if not documents: 
+		PreProcess(files)
 		documents.tokenize()
 		documents.normalize()
 		documents.stem()
 		pickle.dump(documents,open('documents.p',"wb"))
-	if not index.index:
+	if not index:
+		Index()
 		index.createIndex(documents.tokens)
 		pickle.dump(index,open('index.p',"wb"))
 
@@ -40,6 +42,6 @@ if __name__ == "__main__":
 
 	if args.retrieval.lower() == "tfidf":
 		ret = Retrieval(index)
-		print ret.TFIDF([u'sustainable',u'ecosystems'])
+		print ret.TFIDF([u'a'])
 
 
