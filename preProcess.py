@@ -4,11 +4,17 @@ import itertools
 #put filenames in a list
 class PreProcess:
 
-	def __init__(self, files, lancaster = False, lemmatize = False):
+	def __init__(self, files, porter = False, lemmatize = False):
 		self.listOfFiles = files
+		self.lemmatize = lemmatize
+		self.tokens = dict()
+		self.stemmer = nltk.PorterStemmer()
+		if not porter:
+			self.stemmer = nltk.LancasterStemmer()
+		self.wnl = nltk.WordNetLemmatizer()
 
 	"""
-	Tokenize a list of files
+	Tokenize the list of files
 	"""
 	def tokenize(self):
 		tokens = dict()
@@ -17,51 +23,42 @@ class PreProcess:
 				text = open(filename, 'r').read().decode('utf-8')
 			except UnicodeDecodeError:
 				text = open(filename, 'r').read().decode('iso-8859-1')
-			w = [nltk.word_tokenize(t) for t in nltk.sent_tokenize(text)]
-			tokens[filename[11:-4]] = list(itertools.chain(*w))
-			#Filter out punctuation
-			for filename,tokens in self.tokens.iteritems():
-				tokens[filename] = filter(lambda token: token not in ',-()', tokens)
-			return tokens;
+			tokenizedSentences = [self.tokenizeSentence(t) for t in nltk.sent_tokenize(text)]
+			self.tokens[filename[11:-4]] = list(itertools.chain(*tokenizedSentences))
+
+	def tokenizeSentence(self, text):
+		""" Tokenizes a sentence"""
+		w = nltk.word_tokenize(text)
+		# filter punctuation
+		w = filter(lambda token: token not in ',-()', w)
+		return w
 
 	"""
 	Stems a list of lists of words, if Lancaster is set to true it uses Lancaster else Porter
 	"""
-	def stem(self,tokens, lancaster = True):
-		if lancaster:
-			st = nltk.LancasterStemmer()
-		else:
-			st = nltk.PorterStemmer()
+	def stem(self):
+		for filename,words in self.tokens.iteritems():
+			self.tokens[filename] = self.stemList(words)
 
-		stemmedTokens = dict()
-		for filename,words in tokens.iteritems():
-			fileStemmed = []
-			for word in words:
-				fileStemmed.append(st.stem(word))
-			stemmedTokens[filename] = fileStemmed
-		self.tokens = stemmedTokens
+	def stemList(self, words):
+		return [self.stemmer.stem(word) for word in words]
 
 	"""
 	If lemmatize is set to true, this function also lemmatizes
 	"""
-	def normalize(self,tokens):
-		wnl = nltk.WordNetLemmatizer()
-		normalizedTokens = dict()
-		for filename,words in tokens.iteritems():
-			fileNormalized = []
-			for word in words:
-				if self.lemmatize:
-					word = wnl.lemmatize(word)
-				fileNormalized.append(word.lower())
-			normalizedTokens[filename] = fileNormalized
-		return normalizedTokens
+	def normalize(self):
+		for filename,words in self.tokens.iteritems():
+			self.tokens[filename] = self.normalizeList(words)
 
-	def filterStopwords(self,tokens):
+	def normalizeList(self, words):
+		if self.lemmatize:
+			words = [self.wnl.lemmatize(word) for word in words]
+		return [word.lower() for word in words]
+
+	def filterStopwords(self):
+		for filename,words in self.tokens.iteritems():
+			self.tokens[filename] = self.filterStopwordsList(words)
+
+	def filterStopwordsList(self, words):
 		stopwords = nltk.corpus.stopwords.words('english')
-		filteredTokens = dict()
-		for filename,words in tokens.iteritems():
-			fileFiltered = [w for w in words if w.lower() not in stopwords]
-			filteredTokens[filename] = fileFiltered
-		return filteredTokens
-
-
+		return [w for w in words if w.lower() not in stopwords]

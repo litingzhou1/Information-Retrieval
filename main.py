@@ -21,17 +21,20 @@ if __name__ == "__main__":
 	parser.add_argument("-s", "--statistics", help="Print statistics about the index", action="store_true")
 	parser.add_argument("-r","--retrieval", help="Specify the retrieval algorithm")
 	parser.add_argument("-q","--query", help="Query string in the format <queryid> term1 term2 ... termn")
+	parser.add_argument("-l", "--lemmatize", help="Lemmatize with the NLTK wordnet lemmatizer", action="store_true")
+	parser.add_argument("-p", "--porter", help="Use Porter stemmer instead of Lancaser stemmer", action="store_true")
 	args = parser.parse_args()
 
 	files = glob.glob('collection/*.txt')
 	documents = None if args.nopickle else loadPickle('documents.p')
 	index = None if args.nopickle else loadPickle('index.p')
 
-	if not documents: 
-		documents = PreProcess(files)
+	if not documents:
+		documents = PreProcess(files, args.porter, args.lemmatize)
 		documents.tokenize()
-		# documents.normalize()
-		# documents.stem()
+		documents.filterStopwords()
+		documents.normalize()
+		documents.stem()
 		pickle.dump(documents,open('documents.p',"wb"))
 	if not index:
 		index = Index()
@@ -58,7 +61,8 @@ if __name__ == "__main__":
 	with open(fname + '.txt', 'w') as f:
 		for retname, retrieve in retrieval.items():
 			for queryid, query in queries.items():
-				docScores = retrieve(query.split())
+				query = documents.stemList(documents.normalizeList(documents.filterStopwordsList(documents.tokenizeSentence(query))))
+				docScores = retrieve(query)
 				sortedScores = enumerate(sorted(docScores.iteritems(), key=operator.itemgetter(1),reverse=True))
 				for rank, (doc, score) in sortedScores:
 					f.write("{0} 0 {1} {2} {3} {4}\n".format(queryid, doc, rank+1, score, retname))
