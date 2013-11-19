@@ -22,28 +22,14 @@ if __name__ == "__main__":
 	parser.add_argument("-r","--retrieval", help="Specify the retrieval algorithm")
 	parser.add_argument("-q","--query", help="Query string in the format <queryid> term1 term2 ... termn")
 	parser.add_argument("-l", "--lemmatize", help="Lemmatize with the NLTK wordnet lemmatizer", action="store_true")
-	parser.add_argument("-p", "--porter", help="Use Porter stemmer instead of Lancaser stemmer", action="store_true")
+	parser.add_argument("-nl", "--nolemmatize", help="Don't lemmatize with the NLTK wordnet lemmatizer", action="store_false")
+	parser.add_argument("-p", "--porter", help="Use Porter stemmer", action="store_true")
+	parser.add_argument("-la", "--lancaster", help="Use Lancaster stemmer", action="store_false")
 	args = parser.parse_args()
 
 	files = glob.glob('collection/*.txt')
 	documents = None if args.nopickle else loadPickle('documents.p')
 	index = None if args.nopickle else loadPickle('index.p')
-
-	if not documents:
-		documents = PreProcess(files, args.porter, args.lemmatize)
-		documents.tokenize()
-		documents.filterStopwords()
-		documents.normalize()
-		documents.stem()
-		pickle.dump(documents,open('documents.p',"wb"))
-	if not index:
-		index = Index()
-		index.createIndex(documents.tokens)
-		pickle.dump(index,open('index.p',"wb"))
-
-	if args.statistics:
-		stats = Statistics()
-		stats.getStatistics(documents,index)
 
 	ret = Retrieval(index)
 	# default scoring and queries
@@ -58,14 +44,38 @@ if __name__ == "__main__":
 	if args.query:
 		queries = {args.query[0] : args.query[2:]}
 
+	# if only one of the two dual flags is used, these sets become singletons
+	stemmings = set([args.porter, args.lancaster])
+	lemmatizings = set([args.lemmatize, args.nolemmatize])
+
 	with open(fname + '.txt', 'w') as f:
-		for retname, retrieve in retrieval.items():
-			for queryid, query in queries.items():
-				query = documents.stemList(documents.normalizeList(documents.filterStopwordsList(documents.tokenizeSentence(query))))
-				docScores = retrieve(query)
-				sortedScores = enumerate(sorted(docScores.iteritems(), key=operator.itemgetter(1),reverse=True))
-				for rank, (doc, score) in sortedScores:
-					f.write("{0} 0 {1} {2} {3} {4}\n".format(queryid, doc, rank+1, score, retname))
+		for porter in stemmings:
+			for lemmatizing in lemmatizings:
+				if not documents:
+					documents = PreProcess(files, porter, lemmatizing)
+					documents.tokenize()
+					documents.filterStopwords()
+					documents.normalize()
+					documents.stem()
+					pickle.dump(documents,open('documents.p',"wb"))
+				if not index:
+					index = Index()
+					index.createIndex(documents.tokens)
+					pickle.dump(index,open('index.p',"wb"))
+
+				if args.statistics:
+					stats = Statistics()
+					stats.getStatistics(documents,index)
+
+				for retname, retrieve in retrieval.items():
+					for queryid, query in queries.items():
+						query = documents.stemList(documents.normalizeList(documents.filterStopwordsList(documents.tokenizeSentence(query))))
+						docScores = retrieve(query)
+						sortedScores = enumerate(sorted(docScores.iteritems(), key=operator.itemgetter(1),reverse=True))
+						for rank, (doc, score) in sortedScores:
+							retname += "-lemmatizing" if lemmatizing else "-nolemmatizing"
+							retname += "-porter" if porter else "-lancaster"
+							f.write("{0} 0 {1} {2} {3} {4}\n".format(queryid, doc, rank+1, score, retname))
 
 
 
