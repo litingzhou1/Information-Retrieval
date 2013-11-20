@@ -2,6 +2,7 @@ from preProcess import PreProcess
 from index import Index
 from retrieval import Retrieval
 from statistics import Statistics
+from queryExpansion import QueryExpansion
 import cPickle as pickle
 import glob
 import argparse
@@ -27,6 +28,7 @@ if __name__ == "__main__":
 	parser.add_argument("-l", "--lemmatize", help="Lemmatize with the NLTK wordnet lemmatizer", default = False, action="store_true")
 	parser.add_argument("-st", "--stemmer", help="Specify stemmer", default = 'porter', type = str.lower, choices = ['porter', 'lancaster'])
 	parser.add_argument("-o", "--output", help="Specify output file", default = 'output')
+	parser.add_argument("-qe", "--queryExpansion", help="Use Query Expansion", action="store_true")
 	
 	args = parser.parse_args()
 
@@ -76,6 +78,10 @@ if __name__ == "__main__":
 
 	#score index and write to file
 	query = documents.stemList(documents.normalizeList(documents.filterStopwordsList(documents.tokenizeSentence(query))))
+	if args.queryExpansion:
+		expansionObject = QueryExpansion(index,documents,query,retrieve)
+		query = expansionObject.expandQuery()
+		
 	docScores = retrieve(query)
 	sortedScores = enumerate(sorted(docScores.iteritems(), key=operator.itemgetter(1),reverse=True))
 	for rank, (doc, score) in sortedScores:
