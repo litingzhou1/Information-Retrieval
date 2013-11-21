@@ -14,9 +14,6 @@ class QueryExpansion:
 		self.method = method
 		self.query = query
 
-		#you might want to initalise this with an index and documents
-		#otherwise you can leave out the init function, a python
-		#class doesn't need one
 
 	def getTopDocs(self):
 		"""
@@ -25,9 +22,6 @@ class QueryExpansion:
 		:return: what it returns
 		:param query: describe ....
 		"""
-		#create retrieval object
-		# retrieving = Retrieval(index)
-		# retrieval_dict = {'tfidf': retrieving.TFIDF, 'bm25': retrieving.BM25}
 		retrieve = self.method
 		#score index
 		docScores = retrieve(self.query) #dict, document: score
@@ -54,7 +48,6 @@ class QueryExpansion:
 				try:				#add relative frequency of token in document to count
 					count += float(self.index.index[token][doc])/self.index.lengthOfFiles[doc] 
 				except KeyError: 	#if token not in document
-#					print 1, token
 					pass
 			for doc in self.documents:
 				doc = doc.strip('collection/').strip('.txt')
@@ -62,14 +55,11 @@ class QueryExpansion:
 				try:				#add relative frequency of token in document to normCount
 					normCount += float(self.index.index[token][doc])/self.index.lengthOfFiles[doc] 
 				except KeyError: 	#if token not in document
-#					print 2, token
 					pass
 			try:
 				relFreq[token] = count/normCount #doc -> relFreq
 			except ZeroDivisionError:
-#				print 'zeroDivisionError'
 				pass
-#		print relFreq
 		return relFreq
 
 
@@ -77,15 +67,14 @@ class QueryExpansion:
 		"""
 		retrieve best query expansion terms from expansionIndex and concatenate to original query
 		"""
-		# This should be easy too, maybe you want to add a variable that specifies how many
-		# extra query terms you (maximally) want to add
+
 		topDocs = self.getTopDocs()
 		relFreq = self.createRelFreq(topDocs)
 		relFreqSorted = sorted(relFreq.iteritems(), key=operator.itemgetter(1),reverse=True) #sort by relative frequency
 		expandedQuery = self.query
-		print self.query
+		#print self.query
 		for n in range(expansionSize):
 			expandedQuery.append(relFreqSorted[n][0])
-		print expandedQuery
+		#print expandedQuery
 			
 		return expandedQuery
