@@ -1,5 +1,6 @@
 import nltk
 import itertools
+import re
 
 #put filenames in a list
 class PreProcess:
@@ -28,9 +29,9 @@ class PreProcess:
 
 	def tokenizeSentence(self, text):
 		""" Tokenizes a sentence"""
-		w = nltk.word_tokenize(text)
+		w = [token.lower() for token in nltk.word_tokenize(text)]
 		# filter punctuation
-		w = filter(lambda token: token not in ',-()', w)
+		w = filter(lambda token: re.match(r'\w',token), w)
 		return w
 
 	"""
@@ -60,5 +61,4 @@ class PreProcess:
 			self.tokens[filename] = self.filterStopwordsList(words)
 
 	def filterStopwordsList(self, words):
-		stopwords = nltk.corpus.stopwords.words('english')
-		return [w for w in words if w.lower() not in stopwords]
+		return nltk.corpus.stopwords.words('english')
