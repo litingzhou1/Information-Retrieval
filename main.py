@@ -2,80 +2,93 @@ from preProcess import PreProcess
 from index import Index
 from retrieval import Retrieval
 from statistics import Statistics
+from queryExpansion import QueryExpansion
 import cPickle as pickle
 import glob
 import argparse
 import operator
 
-def loadPickle(fname):
-	""" If `nopickle` is true or loading from `fname` failes, run `buildfunc`  """
+def loadPickleOrCreate(fname, create, noPickle):
+	""" If `noPickle` or loading from `fname` failes, run `create`  """
 	try:
 		with open(fname) as f:
 			return pickle.load(f)
 	except IOError:
-		return None
+		noPickle = True
+	if noPickle:
+		out = create()
+		print 'Pickling %s' % fname
+		pickle.dump(out,open(fname,"wb"))
+		return out
+
+def indexDocuments(files, noPickle, lem, stem, sw):
+	""" Build a document and an index object with specified preprocessing, or possibly load it from a pickle if that exists """
+	print 'Creating index [--lemmatize=%s --stemmer=%s --stopwords=%s]' % (lem,stem,sw)
+
+	# open or load documents
+	fname = 'documents_l=%s_st=%s_sw=%s.p' % (lem, stem, sw)
+	create = lambda: PreProcess(files, stem == 'porter', lem, sw)
+	documents = loadPickleOrCreate(fname, create, noPickle)
+
+	# open or load index
+	fname = 'index_l=%s_st=%s_sw=%s.p' % (lem, stem, sw)
+	create = lambda: Index(documents.tokens)
+	index = loadPickleOrCreate(fname, create, noPickle)
+
+	return documents, index
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
-	parser.add_argument("-n", "--nopickle", help="don't use the saved (pickle) preprocessed index", action="store_true")
+
+	parser.add_argument("-n", "--noPickle", help="don't use the saved (pickle) preprocessed index", action="store_true")
 	parser.add_argument("-s", "--statistics", help="Print statistics about the index", action="store_true")
-	parser.add_argument("-r","--retrieval", help="Specify the retrieval algorithm")
-	parser.add_argument("-q","--query", help="Query string in the format <queryid> term1 term2 ... termn")
-	parser.add_argument("-l", "--lemmatize", help="Lemmatize with the NLTK wordnet lemmatizer", action="store_true")
-	parser.add_argument("-nl", "--nolemmatize", help="Don't lemmatize with the NLTK wordnet lemmatizer", action="store_false")
-	parser.add_argument("-p", "--porter", help="Use Porter stemmer", action="store_true")
-	parser.add_argument("-la", "--lancaster", help="Use Lancaster stemmer", action="store_false")
+	parser.add_argument("-l", "--lemmatize", help="Lemmatize with the NLTK wordnet lemmatizer", default = False, action="store_true")
+	parser.add_argument("-sw", "--stopwords", help="Include stopwords", default = False, action="store_true")
+	parser.add_argument("-st", "--stemmer", help="Specify stemmer", default = 'porter', type = str.lower, choices = ['porter', 'lancaster'])
+	parser.add_argument("-r","--retrieval", default ='tfidf', type = str.lower, choices = ['tfidf','bm25'], help="Specify the retrieval algorithm")
+	parser.add_argument("-q","--query", default = '6 sustainable ecosystems', help="Query string in the format <queryid> term1 term2 ... termn")
+	parser.add_argument("-qe", "--queryExpansion", help="Use Query Expansion", action="store_true")
+	parser.add_argument("-a", "--all", help="Retrieve with all lemmatizing, stemmers, queries, and retrieval methods", action="store_true")
+	parser.add_argument("-o", "--output", help="Specify output file", default = 'output')
+	
 	args = parser.parse_args()
-
 	files = glob.glob('collection/*.txt')
-	documents = None if args.nopickle else loadPickle('documents.p')
-	index = None if args.nopickle else loadPickle('index.p')
 
-	ret = Retrieval(index)
-	# default scoring and queries
-	retrieval = {"tfidf":ret.TFIDF, "bm25": ret.BM25}
-	# retrieval = {"tfidf":ret.TFIDF, "bm25 k b=": (lamda x: ret.BM25(x, k, b)}
-	queries = {6: 'sustainable ecosystems', 7: 'air guitar textile sensors'}
-	fname = 'out'
+	if args.statistics:
+		# print statistics if required
+		documents, index = indexDocuments(files, args.noPickle, args.lemmatize, args.stemmer, args.stopwords)
+		stats = Statistics()
+		stats.getStatistics(documents, index)
+	else:
+		# write query results to output document, 
+		with open(args.output + '.txt', 'w') as f:
+			if args.all:
+				queries = {6: 'sustainable ecosystems', 7: 'air guitar textile sensors'}
+			else:
+				query_list = args.query.split()
+				queries = {query_list[0]: ' '.join(query_list[1:])}
 
-	if args.retrieval and args.retrieval.lower() in retrieval.keys():
-		retrieval = {args.retrieval.lower() : retrieval[args.retrieval.lower()]}
-		fname = args.retrieval
-	if args.query:
-		queries = {args.query[0] : args.query[2:]}
+			# loop over specified stop word filtering, lemmatizing, stemmers, queries, and retrieval methods
+			for stopwords in [True, False] if args.all else [args.stopwords]:
+				for lemmatize in [True, False] if args.all else [args.lemmatize]:
+					for stemmer in ['porter', 'lancaster'] if args.all else [args.stemmer]:
+						# make documents, index and retrieval objects for this stemmer and lemmatizing stettings
+						documents, index = indexDocuments(files, args.noPickle, lemmatize, stemmer, stopwords)
+						retrieving = Retrieval(index)
+						retrievalDict = {'tfidf': retrieving.TFIDF, 'bm25': retrieving.BM25}
+						for queryID, queryString in queries.iteritems():
+							# make query term list from query string
+							query = documents.preProcessText(queryString)
+							for retrieval, retrieve in [(args.retrieval, retrievalDict[args.retrieval])] if args.all else retrievalDict.iteritems():
+								for queryExpansion in [True, False] if args.all else [args.queryExpansion]:
+									# expand query
+									if queryExpansion:
+										expansionObject = QueryExpansion(index, documents, query, retrieve)
+										query = expansionObject.expandQuery()
 
-	# if only one of the two dual flags is used, these sets become singletons
-	stemmings = set([args.porter, args.lancaster])
-	lemmatizings = set([args.lemmatize, args.nolemmatize])
-
-	with open(fname + '.txt', 'w') as f:
-		for porter in stemmings:
-			for lemmatizing in lemmatizings:
-				if not documents:
-					documents = PreProcess(files, porter, lemmatizing)
-					documents.tokenize()
-					documents.filterStopwords()
-					documents.normalize()
-					documents.stem()
-					pickle.dump(documents,open('documents.p',"wb"))
-				if not index:
-					index = Index()
-					index.createIndex(documents.tokens)
-					pickle.dump(index,open('index.p',"wb"))
-
-				if args.statistics:
-					stats = Statistics()
-					stats.getStatistics(documents,index)
-
-				for retname, retrieve in retrieval.items():
-					for queryid, query in queries.items():
-						query = documents.stemList(documents.normalizeList(documents.filterStopwordsList(documents.tokenizeSentence(query))))
-						docScores = retrieve(query)
-						sortedScores = enumerate(sorted(docScores.iteritems(), key=operator.itemgetter(1),reverse=True))
-						for rank, (doc, score) in sortedScores:
-							retname += "-lemmatizing" if lemmatizing else "-nolemmatizing"
-							retname += "-porter" if porter else "-lancaster"
-							f.write("{0} 0 {1} {2} {3} {4}\n".format(queryid, doc, rank+1, score, retname))
-
-
-
+									# Retrieve all scores and write them to file
+									docScores = retrieve(query)
+									sortedScores = enumerate(sorted(docScores.iteritems(), key=operator.itemgetter(1),reverse=True))
+									name = 'l=%s_st=%s_sw=%s_r=%s_qe=%s' % (lemmatize, stemmer, stopwords, retrieval, queryExpansion)
+									for rank, (doc, score) in sortedScores:
+										f.write("{0} 0 {1} {2} {3} {4}\n".format(queryID, doc, rank+1, score, name))
