@@ -1,7 +1,11 @@
-Information Retrieval with TREC evaluation output
+Information Retrieval
+=====================
+with TREC evaluation output
 
-== Usage ==
+Usage
+-----
 
+```
   usage: main.py [-h] [-n] [-s] [-l] [-sw] [-st {porter,lancaster}]
                   [-r {tfidf,bm25}] [-q QUERY] [-qe] [-a] [-o OUTPUT]
 
@@ -24,6 +28,8 @@ Information Retrieval with TREC evaluation output
                           retrieval methods
     -o OUTPUT, --output OUTPUT
                           Specify output file
+```
 
-== Dependencies ==
+Dependencies
+------------
 nltk
