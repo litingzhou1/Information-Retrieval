@@ -61,4 +61,4 @@ class PreProcess:
 			self.tokens[filename] = self.filterStopwordsList(words)
 
 	def filterStopwordsList(self, words):
-		return nltk.corpus.stopwords.words('english')
+		return [w for w in words if w not in nltk.corpus.stopwords.words('english')]
