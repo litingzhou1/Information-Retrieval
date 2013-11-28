@@ -42,8 +42,8 @@ if __name__ == "__main__":
 
 	parser.add_argument("-n", "--noPickle", help="don't use the saved (pickle) preprocessed index", action="store_true")
 	parser.add_argument("-s", "--statistics", help="Print statistics about the index", action="store_true")
-	parser.add_argument("-l", "--lemmatize", help="Lemmatize with the NLTK wordnet lemmatizer", default = False, action="store_true")
-	parser.add_argument("-sw", "--stopwords", help="Include stopwords", default = False, action="store_true")
+	parser.add_argument("-l", "--lemmatize", help="Lemmatize with the NLTK wordnet lemmatizer", default = True, action="store_true")
+	parser.add_argument("-sw", "--stopwords", help="Keep stopwords", default = False, action="store_true")
 	parser.add_argument("-st", "--stemmer", help="Specify stemmer", default = 'porter', type = str.lower, choices = ['porter', 'lancaster'])
 	parser.add_argument("-r","--retrieval", default ='tfidf', type = str.lower, choices = ['tfidf','bm25'], help="Specify the retrieval algorithm")
 	parser.add_argument("-q","--query", default = '6 sustainable ecosystems', help="Query string in the format <queryid> term1 term2 ... termn")
@@ -79,7 +79,7 @@ if __name__ == "__main__":
 						for queryID, queryString in queries.iteritems():
 							# make query term list from query string
 							query = documents.preProcessText(queryString)
-							for retrieval, retrieve in [(args.retrieval, retrievalDict[args.retrieval])] if args.all else retrievalDict.iteritems():
+							for retrieval, retrieve in retrievalDict.iteritems() if args.all else [(args.retrieval, retrievalDict[args.retrieval])]:
 								for queryExpansion in [True, False] if args.all else [args.queryExpansion]:
 									# expand query
 									if queryExpansion:
