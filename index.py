@@ -1,24 +1,18 @@
 class Index:
-	def __init__(self):
+	def __init__(self, docs):
 		self.lengthOfFiles = dict()
 		self.index = dict()
-	"""
-	very basic version of index
-	Discuss what we should do here
-	"""
-	def createIndex(self,tokens):
-		index = dict()
-		for filename,tokens in tokens.iteritems():
+
+		for filename,tokens in docs.iteritems():
 			self.lengthOfFiles[filename] = len(tokens)
 			for token in tokens:
-				if token in index:
-					if filename in index[token]:
-						index[token][filename] += 1
+				if token in self.index:
+					if filename in self.index[token]:
+						self.index[token][filename] += 1
 					else:
-						index[token][filename] = 1
+						self.index[token][filename] = 1
 				else:
-					index[token] = dict()
-					index[token][filename] = 1
-		self.index = index
+					self.index[token] = dict()
+					self.index[token][filename] = 1		
 
 	
