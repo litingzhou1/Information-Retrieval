@@ -47,7 +47,7 @@ if __name__ == "__main__":
 	parser.add_argument("-st", "--stemmer", help="Specify stemmer", default = 'porter', type = str.lower, choices = ['porter', 'lancaster'])
 	parser.add_argument("-r","--retrieval", default ='tfidf', type = str.lower, choices = ['tfidf','bm25'], help="Specify the retrieval algorithm")
 	parser.add_argument("-q","--query", default = '6 sustainable ecosystems', help="Query string in the format <queryid> term1 term2 ... termn")
-	parser.add_argument("-qe", "--queryExpansion", help="Use Query Expansion", action="store_true")
+	parser.add_argument("-qe", "--queryExpansion", help="Specify Query Expansion", default = None, choices = ['abs','rel'])
 	parser.add_argument("-a", "--all", help="Retrieve with all lemmatizing, stemmers, queries, and retrieval methods", action="store_true")
 	parser.add_argument("-o", "--output", help="Specify output file", default = 'output')
 	
@@ -80,11 +80,12 @@ if __name__ == "__main__":
 							# make query term list from query string
 							query = documents.preProcessText(queryString)
 							for retrieval, retrieve in retrievalDict.iteritems() if args.all else [(args.retrieval, retrievalDict[args.retrieval])]:
-								for queryExpansion in [True, False] if args.all else [args.queryExpansion]:
+								for queryExpansion in [None, 'abs', 'rel'] if args.all else [args.queryExpansion]:
 									# expand query
 									if queryExpansion:
 										expansionObject = QueryExpansion(index, documents, query, retrieve)
-										query = expansionObject.expandQuery()
+										absQ, relQ = expansionObject.expandQuery()
+										query = absQ if queryExpansion == 'abs' else relQ
 
 									# Retrieve all scores and write them to file
 									docScores = retrieve(query)

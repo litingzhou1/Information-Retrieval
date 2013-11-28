@@ -29,52 +29,54 @@ class QueryExpansion:
 		topDocs = [i[0] for i in sortedScores[:20]] #create list of names of top documents
 		
 		return topDocs
-		
-		
-		#you should have a good look at main2, and use the bit from '#create retrieval object'
-		#on (apart from the writing part of course). You say you want to return a dictionary, but
-		#you already have a sorted list with the best 50, maybe you just want to return those.
-		return scores
 
 	def createRelFreq(self, topDocs):
 		"""
 		calculate relative frequency for all tokens
 		"""
 		relFreq = dict()
+		absFreq = dict()
 		for token in self.index.index:
+			countAbs = 0
+			count = 0
 			for doc in topDocs:
-				count = 0
 				doc = doc.strip('/collection').strip('.txt')
 				try:				#add relative frequency of token in document to count
 					count += float(self.index.index[token][doc])/self.index.lengthOfFiles[doc] 
+					#add number of times token is in document
+					countAbs += float(self.index.index[token][doc])
 				except KeyError: 	#if token not in document
 					pass
-			for doc in self.documents:
-				doc = doc.strip('collection/').strip('.txt')
-				normCount = 0
-				try:				#add relative frequency of token in document to normCount
-					normCount += float(self.index.index[token][doc])/self.index.lengthOfFiles[doc] 
-				except KeyError: 	#if token not in document
-					pass
-			try:
-				relFreq[token] = count/normCount #doc -> relFreq
-			except ZeroDivisionError:
-				pass
-		return relFreq
+
+			relFreq[token] = count #doc -> relFreq
+			#calculate absFreq = total occurrences in topdocs/total in all docs
+			absFreq[token] = countAbs
+	
+		return relFreq, absFreq
 
 
-	def expandQuery(self, expansionSize = 3):
+	def expandQuery(self, expansionSize = 10):
 		"""
 		retrieve best query expansion terms from expansionIndex and concatenate to original query
+		For relative frequencies, frequency in each document is divided by frequency in all docs
+		For absolute frequencies, frequency in all topdocs is divided by frequency in all docs
 		"""
 
 		topDocs = self.getTopDocs()
-		relFreq = self.createRelFreq(topDocs)
+		relFreq, absFreq = self.createRelFreq(topDocs)
 		relFreqSorted = sorted(relFreq.iteritems(), key=operator.itemgetter(1),reverse=True) #sort by relative frequency
-		expandedQuery = self.query
-		#print self.query
+		absFreqSorted = sorted(absFreq.iteritems(), key=operator.itemgetter(1),reverse=True) #sort by absolute frequency
+		expandedQueryRel = self.query
+		expandedQueryAbs = self.query
+
 		for n in range(expansionSize):
-			expandedQuery.append(relFreqSorted[n][0])
-		#print expandedQuery
-			
-		return expandedQuery
+			#append token with highest
+			if relFreqSorted[n][0] not in self.query:
+				expandedQueryRel.append(relFreqSorted[n][0])
+			if absFreqSorted[n][0] not in self.query:
+				expandedQueryAbs.append(absFreqSorted[n][0])
+
+		#print 'rel: ', expandedQueryRel
+		#print 'abs: ', expandedQueryAbs	
+
+		return expandedQueryRel, expandedQueryRel
