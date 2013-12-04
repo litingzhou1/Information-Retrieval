@@ -15,4 +15,8 @@ class Index:
 					self.index[token] = dict()
 					self.index[token][filename] = 1		
 
+		for token in self.index:
+			self.index[token]["cf"] = sum(self.index[token].values())
+
+
 	
