@@ -19,8 +19,8 @@ class QueryExpansion:
 		"""
 		# get scores of all documents for a particular query and method
 
-		:return: what it returns
-		:param query: describe ....
+		:Input: self (containing query and method)
+		:Returns: the top 20 documents for the query, using the method specified
 		"""
 		retrieve = self.method
 		#score index
@@ -32,7 +32,10 @@ class QueryExpansion:
 
 	def createRelFreq(self, topDocs):
 		"""
-		calculate relative frequency for all tokens
+		# calculate relative frequency for all tokens
+
+		:Input: self and best 20 documents for query and method 
+		:Returns:
 		"""
 		relFreq = dict()
 		absFreq = dict()
