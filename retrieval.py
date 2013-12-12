@@ -14,6 +14,7 @@ class Retrieval:
 		"""	The Term Frequency * Inverse Document Frequency score for a query (string list) in a document """
 		# Take the documents in which all the query terms appear
 		docs = set.intersection(*[set(self.index[term].keys()) for term in query])
+		docs.discard("cf")
 		score = dict.fromkeys(list(docs), 0)
 		for term in query:
 			idf = log(self.N / float(len(self.index[term])))
@@ -25,15 +26,30 @@ class Retrieval:
 	def BM25(self, query, k = 1.5, b = 0.75): # default b and k values from http://en.wikipedia.org/wiki/Okapi_BM25#cite_ref-1
 		"""	The Okapi BM25 score for a query (string list) in a document """
 		# Take the documents in which all the query terms appear
-		print query
 		docs = set.intersection(*[set(self.index[term].keys()) for term in query])
+		docs.discard("cf")
 		score = dict.fromkeys(list(docs), 0)
 		for term in query:
 			idf = log(self.N / float(len(self.index[term])))
 			for doc, tf in self.index[term].items():
-				if doc == "cf":
-					continue
 				if doc in docs:
 					score[doc] += idf * (((k+1) * tf) / (k*((1-b) + b*(self.lengthOfFiles[doc]/self.avgFileLength)) + tf))
 
 		return score
+
+	""" Compute score for PLM"""
+	def PLM(self, query, plm):
+		score = dict()
+		#Take the documents in which all query terms appear
+		docs = set.intersection(*[set(plm[term].keys()) for term in query])
+		docs.discard("cf")
+		for term in query:
+			for doc in plm[term]:
+				if score.get(doc):
+					score[doc] += log(plm[term][doc])
+				else:
+					score[doc] =  log(plm[term][doc])
+			
+		return score		
+
+
