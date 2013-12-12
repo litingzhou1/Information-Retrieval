@@ -24,7 +24,20 @@ The last option is to lemmatize words. Lemmatization if effectively a more elabo
 \section*{Models}
 In this section we detail the models we implemented to evaluate on the used subset of the CSIRO collection. We implemented TF-IDF and BM-25, as these are relatively simple, much-used retrieval models and thus produce good baseline scores.
 \subsection*{TF-IDF}
+TF-IDF scoring is based on the term frequency in a given document compared to the total term frequency, and is designed to return high scores if the term is frequent in a document (hence Term Frequency and infrequent in the whole collection (hence Inverse Document Frequency). We use logarithmically scaled term frequency, resulting in the following formula for the score of a document $d$, given a query $q$:
+\begin{align*}
+Score = (1+log(TF))\cdot IDF
+\end{align*}
+With $TF$ being the frequency of $q$ in $d$
+\begin{align*}
+IDF = log(\frac{N_{documents, total}}{N_{dcuments, q}})
+\end{align*}
 \subsection*{BM25}
+Similar to TF-IDF, BM25 is a bag-of-words retrieval model. With $IDF$ computed as for TF-IDF, the score is computed as:
+\begin{align*}
+Score(d,q) = IDF(q) * \frac{(k+1)*TF}{k*(1-b)+b\frac{length_d}{length_{mean}}+TF}
+\end{align*}
+With k and b parameters to be set.
 \subsection*{Parsimonious Language Models}
 \subsection*{Query Expansion}
 
