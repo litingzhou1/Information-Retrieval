@@ -93,8 +93,6 @@ if __name__ == "__main__":
 								print score
 							for retrieval, retrieve in retrievalDict.iteritems() if args.all else [(args.retrieval, retrievalDict[args.retrieval])]:
 								for queryExpansion in [None, 'abs', 'rel'] if args.all else [args.queryExpansion]:
-									
-
 									# expand query
 									if queryExpansion:
 										expansionObject = QueryExpansion(index, documents, query, retrieve)
