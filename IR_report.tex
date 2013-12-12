@@ -5,12 +5,29 @@
 
 \begin{document}
 \title{Report Information Retrieval}
-\author{By Benno Kruit - Joost van Amersfoort - Otto Fabius \\ 10576223 - 746...54 - 5619858}
+\author{By Benno Kruit - Joost van Amersfoort - Otto Fabius \\ 10576223 - 10021248 - 5619858}
 \maketitle
 
 \section*{Introduction}
+In this report, we detail experiments on several different models and parameter settings for retrieving documents matching a query. %CHIEF SCORES: iets over specifieke vraagstelling, ook m.b.t. tot scores 
+In order to do this, an Information Retrieval system was developed for a subset of 262 documents from the CSIRO collection (ref). The system takes the set of documents in .txt format as input, stores information on these documents in an inverted index, and, for a given query, outputs a score for each document. The IR system is implemented in Python.
+
+First, although the emphasis is on the various models, we will briefly describe the preprocessing on and indexing of the documents, as done in our experiments. Next, we will describe the specific models implemented and determine the parameter settings to be varied. In the Results section, we will detail the effectiveness of our various models, evaluated using an online evaluation system (at  http://thetrecfiles.nonrelevant.net/).
+
+\section*{Preprocessing and Indexing}
+In preprocessing, each document is split into lowercase tokens after removing punctuation. For each document, the frequency of each occurring token is stored in an inverted index. 
+
+Additional optional preprocessing functions are included. One option is to remove stop words. Another option is to stem words (remove affixes) using the nltk (ref) implementation of either the Porter stemmer (ref) or Lancaster stemmer (ref). uitleg Porter en Lancaster...? 
+
+The last option is to lemmatize words. Lemmatization if effectively a more elaborate way than stemming to group words with more or less the same meaning. Where stemming simply removes predefined endings of words when present, lemmatization converts words into their lemma, or base form, through attempting to match words to a dictionary. This way, words that differ distinctly morphologically from their base form (such as 'worse' does from 'bad') can also be lemmatized. This is, however, computationally more costly than stemming. For the optional preprocessing functions, implementations by the python Natural Language Toolkit (nltk) are used.
 
 \section*{Models}
+In this section we detail the models we implemented to evaluate on the used subset of the CSIRO collection. We implemented TF-IDF and BM-25, as these are relatively simple, much-used retrieval models and thus produce good baseline scores.
+\subsection*{TF-IDF}
+\subsection*{BM25}
+\subsection*{Parsimonious Language Models}
+\subsection*{Query Expansion}
+
 
 \section*{Results}
 
