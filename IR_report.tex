@@ -37,15 +37,33 @@ Similar to TF-IDF, BM25 is a bag-of-words retrieval model. With $IDF$ computed a
 \begin{align*}
 Score(d,q) = IDF(q) * \frac{(k+1)*TF}{k*(1-b)+b\frac{length_d}{length_{mean}}+TF}
 \end{align*}
-With k and b parameters to be set.
-\subsection*{Parsimonious Language Models}
-\subsection*{Query Expansion}
+With $k$ and $b$ parameters to be set.
 
+\subsection*{Parsimonious Language Model}
+
+\subsection*{Query Expansion}
+In query expansion, an attempt is made to expand the query with words that are similar to the query according to some measure. In our implementation, first the top $n$ documents for the query are selected using the defined retrieval model. Next, the $m$ most frequent tokens in the returned documents are selected to add to the original query for re-evaluation of the scores. The frequency of a token in the relevant documents can be normalized for the length of each of the top $n$ documents. We therefore have two measures:
+
+\begin{align*}
+F_{abs}(term) = \sum_{doc=1}^{n}\cdot freq(term,doc)
+\end{align*}
+and
+\begin{align*}
+F_{rel}(term) = \sum_{doc=1}^{n}\frac{freq(term,doc)}{length(doc)}
+\end{align*}
+
+In our results, we use relatively small $n = 20$ and $m = 10$ because we have a small collection.
 
 \section*{Results}
 
+We have awesome results, see Table Nonexistent.
+
 \section*{Discussion}
 
+
+
 \section*{Conclusion}
+
+
 
 \end{document}
