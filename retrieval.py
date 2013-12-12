@@ -31,6 +31,8 @@ class Retrieval:
 		for term in query:
 			idf = log(self.N / float(len(self.index[term])))
 			for doc, tf in self.index[term].items():
+				if doc == "cf":
+					continue
 				if doc in docs:
 					score[doc] += idf * (((k+1) * tf) / (k*((1-b) + b*(self.lengthOfFiles[doc]/self.avgFileLength)) + tf))
 
