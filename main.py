@@ -3,6 +3,8 @@ from index import Index
 from retrieval import Retrieval
 from statistics import Statistics
 from queryExpansion import QueryExpansion
+from PLM import PLM
+
 import cPickle as pickle
 import glob
 import argparse
@@ -48,6 +50,7 @@ if __name__ == "__main__":
 	parser.add_argument("-r","--retrieval", default ='tfidf', type = str.lower, choices = ['tfidf','bm25'], help="Specify the retrieval algorithm")
 	parser.add_argument("-q","--query", default = '6 sustainable ecosystems', help="Query string in the format <queryid> term1 term2 ... termn")
 	parser.add_argument("-qe", "--queryExpansion", help="Specify Query Expansion", default = None, choices = ['abs','rel'])
+	parser.add_argument("-plm","--parsimoniousLM", help="Use PLM", action="store_true")
 	parser.add_argument("-a", "--all", help="Retrieve with all lemmatizing, stemmers, queries, and retrieval methods", action="store_true")
 	parser.add_argument("-o", "--output", help="Specify output file", default = 'output')
 	
@@ -56,7 +59,7 @@ if __name__ == "__main__":
 
 	if args.statistics:
 		# print statistics if required
-		documents, index = indexDocuments(files, args.noPickle, args.lemmatize, args.stemmer, args.stopwords)
+		documents, index = indexDocuments(files, args.noPickle, args.lemmatize, args.stemmer, True)
 		stats = Statistics()
 		stats.getStatistics(documents, index)
 	else:
@@ -79,6 +82,15 @@ if __name__ == "__main__":
 						for queryID, queryString in queries.iteritems():
 							# make query term list from query string
 							query = documents.preProcessText(queryString)
+							if PLM:
+								amountOfTokens = sum(map(len,documents.tokens.values()))
+								plm = PLM(amountOfTokens)
+								plmIndex = plm.parsimony(index.index,dict())
+								for i in range(0,10):
+									plmIndex = plm.parsimony(index.index,plmIndex)
+
+								score = plm.retrieval(query,plmIndex)
+								print score
 							for retrieval, retrieve in retrievalDict.iteritems() if args.all else [(args.retrieval, retrievalDict[args.retrieval])]:
 								for queryExpansion in [None, 'abs', 'rel'] if args.all else [args.queryExpansion]:
 									# expand query
