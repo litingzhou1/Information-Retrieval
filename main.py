@@ -85,9 +85,6 @@ if __name__ == "__main__":
 				for i in range(0,10):
 					plmIndex = plm.parsimony(index.index,plmIndex)
 
-			del retrieving.index["cf"]
-
-
 			#Add expanded queries to the list
 			if args.queryExpansion:
 				print "Adding queries with query expansion"
