@@ -51,7 +51,7 @@ if __name__ == "__main__":
 	parser.add_argument("-q","--query", help="Query string in the format <queryid> term1 term2 ... termn")
 	parser.add_argument("-qe", "--queryExpansion", help="Specify Query Expansion", action = "store_true", default = False)
 	parser.add_argument("-plm","--parsimoniousLM", help="Use PLM", action="store_true", default = False)
-	
+
 	args = parser.parse_args()
 	files = glob.glob('collection/*.txt')
 
@@ -94,7 +94,7 @@ if __name__ == "__main__":
 					absQ, relQ = expansionObject.expandQuery()
 					queries[queryID+10] = absQ
 					queries[queryID+100] = relQ
-							
+
 
 			for queryID, queryString in queries.iteritems():
 				# Preprocess queries
@@ -102,12 +102,12 @@ if __name__ == "__main__":
 				print "Retrieving scores for: "
 				print query
 				for retrieval, retrieve in retrievalDict.iteritems():
-						# Retrieve all scores and write them to file
-						if PLM and retrieval == "plm":
-							docScores = retrieve(query,plmIndex)
-						else:
-							docScores = retrieve(query)
-						sortedScores = enumerate(sorted(docScores.iteritems(), key=operator.itemgetter(1),reverse=True))
-						name = 'l=%s_st=%s_sw=%s_r=%s_qe=%s' % (args.lemmatize, args.stemmer, args.stopwords, retrieval, args.queryExpansion)
-						for rank, (doc, score) in sortedScores:
-							f.write("{0} 0 {1} {2} {3} {4}\n".format(queryID, doc, rank+1, score, name))
+					# Retrieve all scores and write them to file
+					if PLM and retrieval == "plm":
+						docScores = retrieve(query,plmIndex)
+					else:
+						docScores = retrieve(query)
+					sortedScores = enumerate(sorted(docScores.iteritems(), key=operator.itemgetter(1),reverse=True))
+					name = 'l=%s_st=%s_sw=%s_r=%s_qe=%s' % (args.lemmatize, args.stemmer, args.stopwords, retrieval, args.queryExpansion)
+					for rank, (doc, score) in sortedScores:
+						f.write("{0} 0 {1} {2} {3} {4}\n".format(queryID, doc, rank+1, score, name))
