@@ -37,19 +37,3 @@ class Retrieval:
 
 		return score
 
-	""" Compute score for PLM"""
-	def PLM(self, query, plm):
-		score = dict()
-		#Take the documents in which all query terms appear
-		docs = set.intersection(*[set(plm[term].keys()) for term in query])
-		docs.discard("cf")
-		for term in query:
-			for doc in plm[term]:
-				if score.get(doc):
-					score[doc] += log(plm[term][doc])
-				else:
-					score[doc] =  log(plm[term][doc])
-			
-		return score		
-
-

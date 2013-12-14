@@ -50,7 +50,8 @@ if __name__ == "__main__":
 	parser.add_argument("-st", "--stemmer", help="Specify stemmer", default = 'porter', type = str.lower, choices = ['porter', 'lancaster'])
 	parser.add_argument("-q","--query", help="Query string in the format <queryid> term1 term2 ... termn")
 	parser.add_argument("-qe", "--queryExpansion", help="Specify Query Expansion", action = "store_true", default = False)
-	parser.add_argument("-plm","--parsimoniousLM", help="Use PLM", action="store_true", default = False)
+	parser.add_argument("-m","--model", help="Select model" , default="tfidf", type = str.lower, choices = ['tfidf','bm25','plm'])
+	parser.add_argument("-o", "--output", help="Specify output file", default = 'output')
 
 	args = parser.parse_args()
 	files = glob.glob('collection/*.txt')
@@ -62,7 +63,7 @@ if __name__ == "__main__":
 		stats.getStatistics(documents, index)
 	else:
 		# write query results to output document, 
-		with open('output.txt', 'w') as f:
+		with open(args.output + '.txt', 'w') as f:
 			if args.query:
 				query_list = args.query.split()
 				queries = {query_list[0]: ' '.join(query_list[1:])}
@@ -72,12 +73,10 @@ if __name__ == "__main__":
 			# make documents, index and retrieval objects for this stemmer and lemmatizing stettings
 			documents, index = indexDocuments(files, args.noPickle, args.lemmatize, args.stemmer, args.stopwords)
 			retrieving = Retrieval(index)
-			retrievalDict = {'tfidf': retrieving.TFIDF, 'bm25': retrieving.BM25}
 
 			#If PLM, then compute the PLM before retrieval
-			if args.parsimoniousLM:
+			if args.model == "plm":
 				print "Training PLM"
-				retrievalDict["plm"] = retrieving.PLM
 				amountOfTokens = sum(map(len,documents.tokens.values()))
 				plm = PLM(amountOfTokens)
 				plmIndex = plm.parsimony(index.index,dict())
@@ -101,13 +100,16 @@ if __name__ == "__main__":
 				query = documents.preProcessText(queryString)
 				print "Retrieving scores for: "
 				print query
-				for retrieval, retrieve in retrievalDict.iteritems():
-					# Retrieve all scores and write them to file
-					if PLM and retrieval == "plm":
-						docScores = retrieve(query,plmIndex)
-					else:
-						docScores = retrieve(query)
-					sortedScores = enumerate(sorted(docScores.iteritems(), key=operator.itemgetter(1),reverse=True))
-					name = 'l=%s_st=%s_sw=%s_r=%s_qe=%s' % (args.lemmatize, args.stemmer, args.stopwords, retrieval, args.queryExpansion)
-					for rank, (doc, score) in sortedScores:
-						f.write("{0} 0 {1} {2} {3} {4}\n".format(queryID, doc, rank+1, score, name))
+				# Retrieve all scores and write them to file
+
+				if args.model == "plm":
+					docScores = plm.score(query,index.index, plmIndex)
+				elif args.model == "tfidf":
+					docScores = retrieving.TFIDF(query)
+				elif args.model == "bm25":
+					docScores = retrieving.BM25(query)
+				
+				sortedScores = enumerate(sorted(docScores.iteritems(), key=operator.itemgetter(1),reverse=True))
+				name = 'l=%s_st=%s_sw=%s_r=%s_qe=%s' % (args.lemmatize, args.stemmer, args.stopwords, args.model, args.queryExpansion)
+				for rank, (doc, score) in sortedScores:
+					f.write("{0} 0 {1} {2} {3} {4}\n".format(queryID, doc, rank+1, score, name))
