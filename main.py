@@ -12,17 +12,17 @@ import operator
 
 def loadPickleOrCreate(fname, create, noPickle):
 	""" If `noPickle` or loading from `fname` failes, run `create`  """
-	try:
-		with open(fname) as f:
-			print "using pickled file"
-			return pickle.load(f)
-	except IOError:
-		noPickle = True
 	if noPickle:
 		out = create()
 		print 'Pickling %s' % fname
 		pickle.dump(out,open(fname,"wb"))
 		return out
+	try:
+		with open(fname) as f:
+			print "using pickled file"
+			return pickle.load(f)
+	except IOError:
+		return loadPickleOrCreate(fname,create,True)
 
 def indexDocuments(files, noPickle, lem, stem, sw):
 	""" Build a document and an index object with specified preprocessing, or possibly load it from a pickle if that exists """
@@ -45,7 +45,7 @@ if __name__ == "__main__":
 
 	parser.add_argument("-n", "--noPickle", help="don't use the saved (pickle) preprocessed index", action="store_true")
 	parser.add_argument("-s", "--statistics", help="Print statistics about the index", action="store_true")
-	parser.add_argument("-l", "--lemmatize", help="Lemmatize with the NLTK wordnet lemmatizer", default = True, action="store_true")
+	parser.add_argument("-l", "--lemmatize", help="Lemmatize with the NLTK wordnet lemmatizer", default = False, action="store_true")
 	parser.add_argument("-sw", "--stopwords", help="Keep stopwords", default = False, action="store_true")
 	parser.add_argument("-st", "--stemmer", help="Specify stemmer", default = 'porter', type = str.lower, choices = ['porter', 'lancaster'])
 	parser.add_argument("-q","--query", help="Query string in the format <queryid> term1 term2 ... termn")

@@ -5,7 +5,7 @@ import re
 #put filenames in a list
 class PreProcess:
 
-	def __init__(self, files, porter = False, lemmatize = False, stopwords = True):
+	def __init__(self, files, porter, lemmatize, stopwords):
 		self.listOfFiles = files
 		self.lemmatize = lemmatize
 		self.stopwords = stopwords
