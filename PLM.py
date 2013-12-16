@@ -17,7 +17,7 @@ class PLM:
 				try:
 					ptD = plm[token][document] 
 				except KeyError:
-					ptD = 0.1
+					ptD = 0.001
 				tC = float(index[token]["cf"]) / self.amountOfTokens
 				e = (index[token][document] * self.lam * ptD) / ((1-self.lam)*tC + self.lam*ptD)
 				if plm.get(token):
@@ -41,16 +41,16 @@ class PLM:
 	def score(self, query, index, plm):
 		CE = dict()
 		print "modelling the query"
-		for i in range(1,10):	
+		for i in range(0,30):	
 			for token in query:
 				for document in index[token]:
 					if document == "cf":
 						continue
-					# This try-except is necessary for initializing the plm
+					# This try-except is necessary for initializing the cross-entropy
 					try:
 						ptR = CE[token][document] 
 					except KeyError:
-						ptR = 0.1
+						ptR = 0.001
 					tC = float(index[token]["cf"]) / self.amountOfTokens
 					e = query.count(token) * (self.lam * ptR) / ((1-self.lam)*tC + self.lam*ptR)
 					if CE.get(token):
@@ -68,7 +68,7 @@ class PLM:
 						continue;
 					CE[token][document] = CE[token][document] / float(totalE)
 
-		
+	
 		score = dict()
 		#Take the documents in which all query terms appear
 		docs = set.intersection(*[set(plm[term].keys()) for term in query])

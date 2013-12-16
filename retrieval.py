@@ -13,7 +13,7 @@ class Retrieval:
 	def TFIDF(self, query):
 		"""	The Term Frequency * Inverse Document Frequency score for a query (string list) in a document """
 		# Take the documents in which all the query terms appear
-		docs = set.intersection(*[set(self.index[term].keys()) for term in query])
+		docs = set.union(*[set(self.index[term].keys()) for term in query])
 		docs.discard("cf")
 		score = dict.fromkeys(list(docs), 0)
 		for term in query:
@@ -26,7 +26,7 @@ class Retrieval:
 	def BM25(self, query, k = 1.5, b = 0.75): # default b and k values from http://en.wikipedia.org/wiki/Okapi_BM25#cite_ref-1
 		"""	The Okapi BM25 score for a query (string list) in a document """
 		# Take the documents in which all the query terms appear
-		docs = set.intersection(*[set(self.index[term].keys()) for term in query])
+		docs = set.union(*[set(self.index[term].keys()) for term in query])
 		docs.discard("cf")
 		score = dict.fromkeys(list(docs), 0)
 		for term in query:

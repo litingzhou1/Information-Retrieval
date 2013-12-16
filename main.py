@@ -81,7 +81,7 @@ if __name__ == "__main__":
 				plm = PLM(amountOfTokens)
 				plmIndex = plm.parsimony(index.index,dict())
 				#Repeat EM 10 times, can be changed as necessary
-				for i in range(0,10):
+				for i in range(0,5):
 					plmIndex = plm.parsimony(index.index,plmIndex)
 
 			#Add expanded queries to the list
