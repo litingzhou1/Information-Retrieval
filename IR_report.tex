@@ -68,14 +68,79 @@ In our results, we use relatively small $n = 20$ and $m = 10$ because we have a 
 
 \section*{Results}
 
-We have awesome results, see Table Nonexistent.
+\subsection*{Preprocessing}
+
+First, we compared results for different combinations of preprocessing techniques to ascertain which combinations were effective for our document collection and queries, using TF-IDF. An overview is given in Tables 1 and 2. Clearly, the influence of preprocessing on our results is minimal, at least for TF-IDF.
+
+\begin{table}
+\begin{tabular}{|l|c|r|}
+\hline
+ & MAP & R-precision \\ \hline
+Porter stemming & 0.6454 & 0.6622 \\ \hline
+Lancaster stemming & 0.6454 & 0.6622 \\ \hline
+Porter stemming and stopword removal & 0.6454 & 0.6622 \\ \hline
+Lemmatization and stopword removal & 0.6454 & 0.6622 \\ \hline
+\end{tabular}
+\caption{MAP and R-precision for TF-IDF using four different preprocessing settings. Query: 'sustainable ecosystems'}
+\end{table}
+\begin{table}
+\begin{tabular}{|l|c|r|}
+\hline
+ & MAP & R-precision \\ \hline
+Porter stemming & 0.8191 & 0.6491 \\ \hline
+Lancaster stemming & 0.8191 & 0.6491 \\ \hline
+Porter stemming and stopword removal & 0.8165 & 0.6316 \\ \hline
+Lemmatization and stopword removal & 0.8191 & 0.6491 \\ \hline
+\end{tabular}
+\caption{MAP and R-precision for TF-IDF using four different preprocessing settings. Query: 'air guitar textile sensors'} 
+\end{table} 
+
+\subsection*{Comparison of Retrieval Models}
+
+Next, we compared our different retrieval models for the same queries. For BM-25, we used parameter settings k = 1.5 and b = 0.75, which are often used in absence of the use of optimization routines (ref?? ~= wiki.. ). In our implementation of Parsimonious Language Modeling, we used (........) iterations of the EM algorithm. MAP and R-precision were calculated, and are reported in Table 3 and Table 4, respectively.
+
+\begin{table}[!ht]
+\caption{Mean Average Precision for our different retrieval models, for both queries}
+\begin{tabular}{|l|c|c|}
+\hline
+Query & 'sustainable ecosystems' & 'air guitar textile sensors' \\ \hline
+TF-IDF & 0.6454 & 0.8191 \\ \hline
+BM-25 & 0.7326 & 0.7753 \\ \hline
+PLM & 0.5233 & 0.6679 \\ \hline
+\end{tabular}
+\end{table}
+
+\begin{table}[!ht]
+\caption{R-Precision for our different retrieval models, for both queries}
+\begin{tabular}{|l|c|c|}
+\hline
+Query & 'sustainable ecosystems' & 'air guitar textile sensors' \\ \hline
+TF-IDF & 0.6622 & 0.6491 \\ \hline
+BM-25 & 0.7027 & 0.5614 \\ \hline
+PLM & 0.6081 & 0.5439 \\ \hline
+\end{tabular}
+\end{table}
 
 \section*{Discussion}
+
+\subsection*{Preprocessing}
+
+As mentioned in the Results, our different methods for preprocessing did not have a significant impact on MAP and R-precision scores. 
+
+First of all, the lemmatization or either stemming algorithm used did not make any difference for either query. Although unsurprising, this is not trivial. At least for 'sustainable', the two stemming algorithms perform a different operation: the Porter stemmer leaves the word intact (ref), but the Lancaster stemmer removes -able, returning 'sustain'; using the Lancaster stemmer thus allows matching of the verb sustain to the query 'sustainable ecosystems'. 
+
+Removing stopwords also had little to no effect (see Table 1 and Table 2). Of course, our queries did not contain any stopwords, so the only influence removing stopwords might have is on the length of documents, which is used in calculating the score with TF-IDF. 
+
+\subsection*{Comparing Models}
+
+As can be seen from Table 3 and Table 4, the results using a PLM are worse than TF-IDF and BM-25 for both queries. Which retrieval method was best, depended on the query.
+
+The lower scores using the PLM  (verwacht/niet verwacht? reden?)
 
 
 
 \section*{Conclusion}
 
-
+Our results suggest that the chosen model is more important than the preprocessing method of the document collection. For our queries and document collection, BM-25 and TF-IDF outperformed PLM. The succesfullness of a model seems to depend largely on the query and possibly also on the document collection. Therefore, we can not conclude much on the effectiveness of the different models in general.
 
 \end{document}
