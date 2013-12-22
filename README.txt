@@ -20,7 +20,7 @@ optional arguments:
 						Default is "6 Sustainable environment" and "7 air guitar textile sensors"
   -qe {abs,rel}, --queryExpansion {abs,rel}
                          Specify Query Expansion
-  -m {tfidf,bm25,plm}, --model {tfidf,bm25,plm}
+  -m {tfidf,bm25,plm,tfcosine}, --model {tfidf,bm25,plm,tfcosine}
                         Select model
 						Default is TF-IDF
   -o OUTPUT, --output OUTPUT
