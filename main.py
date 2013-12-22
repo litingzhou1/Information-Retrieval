@@ -50,7 +50,7 @@ if __name__ == "__main__":
 	parser.add_argument("-sw", "--stopwords", help="Keep stopwords", default = False, action="store_true")
 	parser.add_argument("-st", "--stemmer", help="Specify stemmer", default = 'porter', type = str.lower, choices = ['porter', 'lancaster'])
 	parser.add_argument("-q","--query", help="Query string in the format <queryid> term1 term2 ... termn")
-	parser.add_argument("-qe", "--queryExpansion", help="Specify Query Expansion", action = "store_true", default = False)
+	parser.add_argument("-qe", "--queryExpansion", help="Specify Query Expansion", default = False, type = str.lower, choices = ['abs','rel'])
 	parser.add_argument("-m","--model", help="Select model" , default="tfidf", type = str.lower, choices = ['tfidf','bm25','plm','tfcosine'])
 	parser.add_argument("-o", "--output", help="Specify output file", default = 'output')
 
@@ -82,7 +82,7 @@ if __name__ == "__main__":
 				plm = PLM(amountOfTokens)
 				plmIndex = plm.parsimony(index.index,dict())
 				#Repeat EM 10 times, can be changed as necessary
-				for i in range(0,5):
+				for i in range(0,10):
 					plmIndex = plm.parsimony(index.index,plmIndex)
 
 			#If TFcosine, then build the document vectors before retrieval
@@ -91,24 +91,25 @@ if __name__ == "__main__":
 				wordvec = WordVector(index, documents.tokens)
 
 
-			#Add expanded queries to the list
-			if args.queryExpansion:
-				print "Adding queries with query expansion"
-				vanillaqueries = queries
-				for queryID,queryString in vanillaqueries.iteritems():
-					expansionObject = QueryExpansion(index, documents, query, retrieve)
-					absQ, relQ = expansionObject.expandQuery()
-					queries[queryID+10] = absQ
-					queries[queryID+100] = relQ
-
-
 			for queryID, queryString in queries.iteritems():
 				# Preprocess queries
 				query = documents.preProcessText(queryString)
+
+				#Create expanded queries
+				if args.queryExpansion:
+					print "Adding terms with query expansion"
+					query = documents.preProcessText(queryString)
+					expansionObject = QueryExpansion(index, documents, query, retrieving.BM25)
+					absQ, relQ = expansionObject.expandQuery()
+					if args.queryExpansion == "rel":
+						query = relQ
+					else:
+						query = absQ
+
 				print "Retrieving scores for: "
 				print query
-				# Retrieve all scores and write them to file
 
+				# Retrieve all scores and write them to file
 				if args.model == "plm":
 					docScores = plm.score(query,index.index, plmIndex)
 				elif args.model == "tfidf":

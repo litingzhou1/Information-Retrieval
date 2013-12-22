@@ -9,17 +9,17 @@
 \maketitle
 
 \section*{Introduction}
-In this report, we detail experiments on several different models and parameter settings for retrieving documents matching a query. %CHIEF SCORES: iets over specifieke vraagstelling, ook m.b.t. tot scores 
-In order to do this, an Information Retrieval system was developed for a subset of 262 documents from the CSIRO collection (ref). The system takes the set of documents in .txt format as input, stores information on these documents in an inverted index, and, for a given query, outputs a score for each document. The IR system is implemented in Python.
+In this report, we detail experiments on several different models and parameter settings for retrieving documents matching a query. In these experiments we try to measure the effectiveness of each model and observe their strengths and weaknesses.  
+In order to do this, an Information Retrieval system was developed for a subset of 262 documents from the CSIRO collection, as made available by the course. The system takes the set of documents in .txt format as input, stores information on these documents in an inverted index, and, for a given query, outputs a score for each document in a way that can be directly evaluated using the trec\_eval system. The IR system is implemented in Python.
 
-First, although the emphasis is on the various models, we will briefly describe the preprocessing on and indexing of the documents, as done in our experiments. Next, we will describe the specific models implemented and determine the parameter settings to be varied. In the Results section, we will detail the effectiveness of our various models, evaluated using an online evaluation system (at  http://thetrecfiles.nonrelevant.net/).
+First, although the emphasis is on the various models, we will briefly describe the preprocessing on and indexing of the documents, as done in our experiments. Next, we will describe the specific models implemented and determine the parameter settings to be varied. In the Results section, we will detail the effectiveness of our various models, evaluated using the trec\_eval system\footnote{http://trec.nist.gov/trec\_eval/} and a qrels file provided with the collection.
 
 \section*{Preprocessing and Indexing}
 In preprocessing, each document is split into lowercase tokens after removing punctuation. For each document, the frequency of each occurring token is stored in an inverted index. 
 
-Additional optional preprocessing functions are included. One option is to remove stop words. Another option is to stem words (remove affixes) using the nltk (ref) implementation of either the Porter stemmer (ref) or Lancaster stemmer (ref). uitleg Porter en Lancaster...? 
+Additional optional preprocessing functions are included. One option is to remove stop words. Another option is to stem words (remove affixes) using the Python Natural Language ToolKit (NLTK)\footnote{http://nltk.org/} implementation of either the Porter stemmer or Lancaster stemmer. The Porter stemmer is less aggressive than the Lancaster stemmer, so we are expecting slightly different results.
 
-The last option is to lemmatize words. Lemmatization if effectively a more elaborate way than stemming to group words with more or less the same meaning. Where stemming simply removes predefined endings of words when present, lemmatization converts words into their lemma, or base form, through attempting to match words to a dictionary. This way, words that differ distinctly morphologically from their base form (such as 'worse' does from 'bad') can also be lemmatized. This is, however, computationally more costly than stemming. For the optional preprocessing functions, implementations by the python Natural Language Toolkit (nltk) are used.
+The last option is to lemmatize words. Lemmatization is effectively a more elaborate way than stemming to group words with more or less the same meaning. Where stemming simply removes predefined endings of words when present, lemmatization converts words into their lemma, or base form, through attempting to match words to a dictionary. This way, words that differ distinctly morphologically from their base form (such as 'worse' does from 'bad') can also be lemmatized. This is, however, computationally more costly than stemming. For the optional preprocessing functions, again implementations by NLTK are used.
 
 \section*{Models}
 In this section we detail the models we implemented to evaluate on the used subset of the CSIRO collection. We implemented TF-IDF and BM-25, as these are relatively simple, much-used retrieval models and thus produce good baseline scores.
@@ -37,7 +37,7 @@ Similar to TF-IDF, BM25 is a bag-of-words retrieval model. With $IDF$ computed a
 \begin{align*}
 Score(d,q) = IDF(q) * \frac{(k+1)*TF}{k*(1-b)+b\frac{length_d}{length_{mean}}+TF}
 \end{align*}
-With $k$ and $b$ parameters to be set.
+With $k$ and $b$ parameters set to k = 1.5, b = 0.75, as suggested by \cite{robertson1995okapi}.
 
 \subsection*{Parsimonious Language Model}
 
@@ -64,18 +64,86 @@ and
 F_{rel}(term) = \sum_{doc=1}^{n}\frac{freq(term,doc)}{length(doc)}
 \end{align*}
 
-In our results, we use relatively small $n = 20$ and $m = 10$ because we have a small collection.
+In our results, we use relatively small $n = 20$ and $m = 10$ because we have a small collection. Unfortunately, Query Expansion did not give any performance improvement and often degraded performance. Therefore, we do not include it in the result section. An idea to make this perform better is to use it on a much larger dataset and use a smarter way to select new words from the top document.
 
 \section*{Results}
 
-We have awesome results, see Table Nonexistent.
+Please see the included README.txt file for instructions on using the program and replicating our results.
+
+\subsection*{Preprocessing}
+
+First, we compared results for different combinations of preprocessing techniques to ascertain which combinations were effective for our document collection and queries, using TF-IDF. An overview is given in Tables 1 and 2. Clearly, the influence of preprocessing on our results is minimal, at least for TF-IDF.
+
+\begin{table}[h]
+\begin{tabular}{|l|c|r|}
+\hline
+ & MAP & R-precision \\ \hline
+Porter stemming & 0.6454 & 0.6622 \\ \hline
+Lancaster stemming & 0.6454 & 0.6622 \\ \hline
+Porter stemming and stopword removal & 0.6454 & 0.6622 \\ \hline
+Lemmatization and stopword removal & 0.6454 & 0.6622 \\ \hline
+\end{tabular}
+\caption{MAP and R-precision for TF-IDF using four different preprocessing settings. Query: 'sustainable ecosystems'}
+\end{table}
+\begin{table}[h]
+\begin{tabular}{|l|c|r|}
+\hline
+ & MAP & R-precision \\ \hline
+Porter stemming & 0.8191 & 0.6491 \\ \hline
+Lancaster stemming & 0.8191 & 0.6491 \\ \hline
+Porter stemming and stopword removal & 0.8165 & 0.6316 \\ \hline
+Lemmatization and stopword removal & 0.8191 & 0.6491 \\ \hline
+\end{tabular}
+\caption{MAP and R-precision for TF-IDF using four different preprocessing settings. Query: 'air guitar textile sensors'} 
+\end{table} 
+
+\subsection*{Comparison of Retrieval Models}
+
+Next, we compared our different retrieval models for the same queries. For BM-25, we used parameter settings k = 1.5 and b = 0.75, which are the suggested values by \cite{robertson1995okapi}. In our implementation of Parsimonious Language Modeling, we used 10 iterations of the EM algorithm, more iterations did not improve the result. $\lambda$ was set to 0.1 as suggested by \cite{hiemstra2004parsimonious} . MAP and R-precision were calculated by trec\_eval on the basis of our output and the qrels file, and are reported in Table 3 and Table 4, respectively.
+
+\begin{table}[h]
+\caption{Mean Average Precision for our different retrieval models, for both queries}
+\begin{tabular}{|l|c|c|}
+\hline
+Query & 'sustainable ecosystems' & 'air guitar textile sensors' \\ \hline
+TF-IDF & 0.6454 & 0.8191 \\ \hline
+BM-25 & 0.7326 & 0.7753 \\ \hline
+PLM & 0.5233 & 0.6679 \\ \hline
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\caption{R-Precision for our different retrieval models, for both queries}
+\begin{tabular}{|l|c|c|}
+\hline
+Query & 'sustainable ecosystems' & 'air guitar textile sensors' \\ \hline
+TF-IDF & 0.6622 & 0.6491 \\ \hline
+BM-25 & 0.7027 & 0.5614 \\ \hline
+PLM & 0.6081 & 0.5439 \\ \hline
+\end{tabular}
+\end{table}
 
 \section*{Discussion}
 
+\subsection*{Preprocessing}
 
+As mentioned in the Results, our different methods for preprocessing did not have a significant impact on MAP and R-precision scores. 
+
+First of all, the lemmatization and either stemming algorithm used did not make any difference for either query. This was not surprising considering the queries are stemmed in the same way: "sustain ecosytem" and "air guitar textil sensor". Likely the size of the index is different, but  
+
+Removing stopwords also had little to no effect (see Table 1 and Table 2). Of course, our queries did not contain any stopwords, so the only influence removing stopwords might have is on the length of documents, which is used in calculating the score with TF-IDF. 
+
+\subsection*{Comparing Models}
+
+As can be seen from Table 3 and Table 4, the results using a PLM are worse than TF-IDF and BM-25 for both queries. Which retrieval method was best, depended on the query.
+
+Somewhat disappointingly, PLM did not achieve a great result. It is not entirely certain what the reason is, but we suspect that the size of the dataset was not sufficient for a proper Language Model. Our collection is a subset of the true collection, but it does contain all the relevant documents for each query. This means that there are a relatively large amount of relevant documents, which favors BM25 and TFIDF. As they are more easily "confused" by large datasets, while PLM could thrive in a situation with less relevant documents.
+%Expand more here?
 
 \section*{Conclusion}
 
+Our results suggest that the chosen model is more important than the preprocessing method of the document collection. For our queries and document collection, BM-25 and TF-IDF outperformed PLM. The successfulness of a model seems to depend largely on the query and possibly also on the type and size document collection. Therefore, we can not make solid conclusions without more testing and different datasets. We can, however, conclude that simple algorithms (TF-IDF) that are trivial to implement, 
 
-
+\bibliographystyle{amsplain}
+\bibliography{ir}
 \end{document}

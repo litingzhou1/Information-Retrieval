@@ -41,7 +41,7 @@ class PLM:
 	def score(self, query, index, plm):
 		CE = dict()
 		print "modelling the query"
-		for i in range(0,30):	
+		for i in range(0,10):	
 			for token in query:
 				for document in index[token]:
 					if document == "cf":
