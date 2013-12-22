@@ -18,8 +18,8 @@ optional arguments:
   -q QUERY, --query QUERY
                         Query string in the format <queryid> term1 term2 ...
 						Default is "6 Sustainable environment" and "7 air guitar textile sensors"
-  -qe, --queryExpansion
-                        Specify Query Expansion
+  -qe {abs,rel}, --queryExpansion {abs,rel}
+                         Specify Query Expansion
   -m {tfidf,bm25,plm}, --model {tfidf,bm25,plm}
                         Select model
 						Default is TF-IDF
@@ -36,6 +36,10 @@ Will create an index (porter stemmer, filter stopwords) if no pickles are found,
 This output can directly be read into the trec_eval program:
 
 >> ./trec_eval -q -M1000 qrels.txt tfidf.txt
+
+
+NOTE:
+The program expects a folder called collection at the same level as main. 
 
 
 
