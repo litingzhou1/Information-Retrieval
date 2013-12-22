@@ -1,10 +1,7 @@
 from math import sqrt, isnan
 import numpy as np
 """
-	Building wordvectors, defined as the vector of document frequencies.
-	Document and query vectors are then wordvector sums
-
-	Very slow because we're not using numpy
+	Documents and queries are represented as a vector of term frequencies.
 """
 class WordVector:
 
@@ -14,7 +11,8 @@ class WordVector:
 
 		self.words = index.index.keys()
 		self.docs = docs.keys()
-
+	
+		# Buld document vectors
 		self.index = []
 		for w, ind in index.index.items():
 			vector = []
@@ -27,19 +25,21 @@ class WordVector:
 		self.wordmatrix = np.array(self.index)
 
 	def cosine(self, query):
-		""" The cosine distance between document frequency word vectors"""
+		""" The cosine distance between each document vector and the query vector"""
 		
+		# Build the query vector
 		u = np.zeros(len(self.words))
 		for w in range(len(self.words)):
 			u[w] = query.count(self.words[w])
-
+		
+		# Calculate cosine distance to each document vector
 		score = {}
 		docmatrix = self.wordmatrix.transpose()
 		for d in range(len(self.docs)):
 			v = docmatrix[d]
-			den = (sqrt(np.dot(u, u)) * sqrt(np.dot(v, v)))
-			if den != 0:
-				cosine = np.dot(u, v) / den
+			denominator = (sqrt(np.dot(u, u)) * sqrt(np.dot(v, v)))
+			if denominator != 0:
+				cosine = np.dot(u, v) / denominator
 			else:
 				cosine = 0
 			score[self.docs[d]] = cosine
