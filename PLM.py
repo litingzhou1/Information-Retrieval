@@ -1,13 +1,13 @@
 from math import log
 
 class PLM:
-	def __init__(self,amountOfTokens,lam=0.5):
+	def __init__(self,amountOfTokens,lam=0.1):
 		self.amountOfTokens = amountOfTokens
 		#Set the lambda used in computing the E-step in EM-maximization
 		self.lam = lam
 
 
-	""" Perform an EM maximization step  """
+	""" Perform an EM maximization step amount of iterations is set in main"""
 	def parsimony(self,index, plm):
 		for token in index:
 			for document in index[token]:
@@ -37,16 +37,16 @@ class PLM:
 
 		return plm
 
-	" Compute score for PLM"""
+	""" Compute score for PLM"""
 	def score(self, query, index, plm):
 		CE = dict()
-		print "modelling the query"
+		print "Modelling the query"
+		""" Code is similar to parsimony, but then for the request """
 		for i in range(0,10):	
 			for token in query:
 				for document in index[token]:
 					if document == "cf":
 						continue
-					# This try-except is necessary for initializing the cross-entropy
 					try:
 						ptR = CE[token][document] 
 					except KeyError:
@@ -72,6 +72,7 @@ class PLM:
 		score = dict()
 		#Take the documents in which all query terms appear
 		docs = set.intersection(*[set(plm[term].keys()) for term in query])
+		#Small hack to make the loop faster
 		docs.discard("cf")
 		for term in query:
 			for doc in plm[term]:
