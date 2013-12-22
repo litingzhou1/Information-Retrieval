@@ -22,7 +22,7 @@ Additional optional preprocessing functions are included. One option is to remov
 The last option is to lemmatize words. Lemmatization is effectively a more elaborate way than stemming to group words with more or less the same meaning. Where stemming simply removes predefined endings of words when present, lemmatization converts words into their lemma, or base form, through attempting to match words to a dictionary. This way, words that differ distinctly morphologically from their base form (such as 'worse' does from 'bad') can also be lemmatized. This is, however, computationally more costly than stemming. For the optional preprocessing functions, again implementations by NLTK are used.
 
 \section*{Models}
-In this section we detail the models we implemented to evaluate on the used subset of the CSIRO collection. We implemented TF-IDF and BM-25, as these are relatively simple, much-used retrieval models and thus produce good baseline scores. Then as an experiment we implemented Query Expansion as part of preprocessing the query, Parsimonious Language Models and Cosine Similarity based on term frequency.
+In this section we detail the models we implemented to evaluate on the used subset of the CSIRO collection. We implemented TF-IDF and BM-25, as these are relatively simple, much-used retrieval models and thus produce good baseline scores. Then, as an experiment, we implemented Query Expansion as part of preprocessing the query, Parsimonious Language Models, and Cosine Similarity based on term frequency.
 \subsection*{TF-IDF}
 TF-IDF scoring is based on the term frequency in a given document compared to the total term frequency, and is designed to return high scores if the term is frequent in a document (hence Term Frequency and infrequent in the whole collection (hence Inverse Document Frequency). We use logarithmically scaled term frequency, resulting in the following formula for the score of a document $d$, given a query $q$:
 \begin{align*}
@@ -103,7 +103,7 @@ Lemmatization and stopword removal & 0.8191 & 0.6491 \\ \hline
 
 \subsection*{Comparison of Retrieval Models}
 
-Next, we compared our different retrieval models for the same queries. For BM-25, we used parameter settings k = 1.5 and b = 0.75, which are the suggested values by \cite{robertson1995okapi}. In our implementation of Parsimonious Language Modeling, we used 10 iterations of the EM algorithm, more iterations did not improve the result. $\lambda$ was set to 0.1 as suggested by \cite{hiemstra2004parsimonious} . MAP and R-precision were calculated by trec\_eval on the basis of our output and the qrels file, and are reported in Table 3 and Table 4, respectively.
+Next, we compared our different retrieval models for the same queries. For BM-25, we used parameter settings k = 1.5 and b = 0.75, which are the suggested values by \cite{robertson1995okapi}. In our implementation of Parsimonious Language Modeling, we used 10 iterations of the EM algorithm, with $\lambda$ set to 0.1 as suggested by \cite{hiemstra2004parsimonious}. More iterations did not improve the result.  MAP and R-precision were calculated by trec\_eval on the basis of our output and the qrels file, and are reported in Table 3 and Table 4, respectively.
 
 \begin{table}[h]
 \caption{Mean Average Precision for our different retrieval models, for both queries}
