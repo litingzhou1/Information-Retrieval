@@ -40,6 +40,7 @@ This output can directly be read into the trec_eval program:
 
 NOTE:
 The program expects a folder called collection at the same level as main. 
+The program depends on the NLTK toolkit, which needs to be installed
 
 
 
