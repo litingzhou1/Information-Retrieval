@@ -1,4 +1,5 @@
-from math import sqrt
+from math import sqrt, isnan
+import numpy as np
 """
 	Building wordvectors, defined as the vector of document frequencies.
 	Document and query vectors are then wordvector sums
@@ -8,47 +9,40 @@ from math import sqrt
 class WordVector:
 
 	def __init__(self, index, docs):
-		self.index = index.index
-		self.docs = docs
-		if "cf" in self.docs:
-			del self.docs["cf"]
+		if "cf" in docs:
+			del docs["cf"]
 
-		# wordvectors is index: words * docs
+		self.words = index.index.keys()
+		self.docs = docs.keys()
 
-		# docvectors is a square matrix: docs * docs
-		self.docvectors = dict.fromkeys(self.docs.keys(), dict.fromkeys(self.docs.keys(), 0))
-		for doc, tokens in self.docs.items():
-			for term in tokens:
-				for dim, val in self.index[term].items():
-					if dim in self.docvectors[doc]:
-						self.docvectors[doc][dim] += val
-
-		print "first docvector: ", self.docvectors.itervalues().next().values()
-
+		self.index = []
+		for w, ind in index.index.items():
+			vector = []
+			for d in docs.keys():
+				try:
+					vector.append(ind[d])
+				except KeyError:
+					vector.append(0)
+			self.index.append(vector)
+		self.wordmatrix = np.array(self.index)
 
 	def cosine(self, query):
 		""" The cosine distance between document frequency word vectors"""
-		if "cf" in self.docs:
-			del self.docs["cf"]
-
-		queryvector = dict.fromkeys(self.docs.keys(), 0)
-		for term in query:
-			for dim, val in self.index[term].items():
-				if dim in queryvector:
-					queryvector[dim] += val
 		
-		print "queryvector: ", queryvector.values()
+		u = np.zeros(len(self.words))
+		for w in range(len(self.words)):
+			u[w] = query.count(self.words[w])
 
-		score = dict.fromkeys(self.docs.keys(), 0)
-		for doc in self.docs.keys():
-			numerator = 0
-			for dim in self.docs.keys():
-				numerator += queryvector[dim] * self.docvectors[doc][dim]
+		score = {}
+		docmatrix = self.wordmatrix.transpose()
+		for d in range(len(self.docs)):
+			v = docmatrix[d]
+			den = (sqrt(np.dot(u, u)) * sqrt(np.dot(v, v)))
+			if den != 0:
+				cosine = np.dot(u, v) / den
+			else:
+				cosine = 0
+			score[self.docs[d]] = cosine
 
-			denominator = 0
-			denominator += sqrt(sum(map(lambda x: x**2, queryvector.values()))) 
-			denominator += sqrt(sum(map(lambda x: x**2, self.docvectors[doc].values())))
-
-			score[doc] = numerator / denominator
 
 		return score

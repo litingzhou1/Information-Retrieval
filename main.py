@@ -4,6 +4,7 @@ from retrieval import Retrieval
 from statistics import Statistics
 from queryExpansion import QueryExpansion
 from PLM import PLM
+from wordvec import WordVector
 
 import cPickle as pickle
 import glob
@@ -50,7 +51,7 @@ if __name__ == "__main__":
 	parser.add_argument("-st", "--stemmer", help="Specify stemmer", default = 'porter', type = str.lower, choices = ['porter', 'lancaster'])
 	parser.add_argument("-q","--query", help="Query string in the format <queryid> term1 term2 ... termn")
 	parser.add_argument("-qe", "--queryExpansion", help="Specify Query Expansion", action = "store_true", default = False)
-	parser.add_argument("-m","--model", help="Select model" , default="tfidf", type = str.lower, choices = ['tfidf','bm25','plm'])
+	parser.add_argument("-m","--model", help="Select model" , default="tfidf", type = str.lower, choices = ['tfidf','bm25','plm','tfcosine'])
 	parser.add_argument("-o", "--output", help="Specify output file", default = 'output')
 
 	args = parser.parse_args()
@@ -84,6 +85,12 @@ if __name__ == "__main__":
 				for i in range(0,5):
 					plmIndex = plm.parsimony(index.index,plmIndex)
 
+			#If TFcosine, then build the document vectors before retrieval
+			if args.model == "tfcosine":
+				print "Building document vectors"
+				wordvec = WordVector(index, documents.tokens)
+
+
 			#Add expanded queries to the list
 			if args.queryExpansion:
 				print "Adding queries with query expansion"
@@ -108,6 +115,8 @@ if __name__ == "__main__":
 					docScores = retrieving.TFIDF(query)
 				elif args.model == "bm25":
 					docScores = retrieving.BM25(query)
+				elif args.model == "tfcosine":
+					docScores = wordvec.cosine(query)
 				
 				sortedScores = enumerate(sorted(docScores.iteritems(), key=operator.itemgetter(1),reverse=True))
 				name = 'l=%s_st=%s_sw=%s_r=%s_qe=%s' % (args.lemmatize, args.stemmer, args.stopwords, args.model, args.queryExpansion)
