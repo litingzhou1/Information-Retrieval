@@ -53,9 +53,9 @@ For retrieving the ordered list of relevant documents for query $R$, the cross-e
 H(R,D) = -\sum_t P(t|R)\cdot log\big( \ (1-\lambda)P(t|C)+\lambda P(t|D) \ \big)
 \end{align*}
 
-\subsection{Word Vectors}
+\subsection*{Word Vectors}
 
-
+In this retrieval model, we define the score of a document and query as the cosine distance between their vector representations. Each element of a vector representation is the frequency of the corresponding word in the document or query. A vector thus has the length of the size of the preprocessed vocabulary. Effectively, this retrieval system is therefore a frequency count with a different structure.
 
 \subsection*{Query Expansion}
 In query expansion, an attempt is made to expand the query with words that are similar to the query according to some measure. In our implementation, first the top $n$ documents for the query are selected using the defined retrieval model. Next, the $m$ most frequent tokens in the returned documents are selected to add to the original query for re-evaluation of the scores. The frequency of a token in the relevant documents can be normalized for the length of each of the top $n$ documents. We therefore have two measures:
@@ -113,6 +113,7 @@ Query & 'sustainable ecosystems' & 'air guitar textile sensors' \\ \hline
 TF-IDF & 0.6454 & 0.8191 \\ \hline
 BM-25 & 0.7326 & 0.7753 \\ \hline
 PLM & 0.5233 & 0.6679 \\ \hline
+Word Vector & 0.7979	 & 0.7297 \\ \hline
 \end{tabular}
 \end{table}
 
@@ -124,6 +125,20 @@ Query & 'sustainable ecosystems' & 'air guitar textile sensors' \\ \hline
 TF-IDF & 0.6622 & 0.6491 \\ \hline
 BM-25 & 0.7027 & 0.5614 \\ \hline
 PLM & 0.6081 & 0.5439 \\ \hline
+Word Vector & 0.7297 & 0.7719 \\ \hline
+\end{tabular}
+\end{table}
+
+We also tested the effectiveness of query expansion on TF-IDF, reported in table 5.
+
+\begin{table}[h]
+\caption{MAP and R-Precision for query expansion with TF-IDF, averaged over both queries}
+\begin{tabular}{|l|c|c|}
+\hline
+ & MAP & R-precision \\ \hline
+No QE & 0.7322 & 0.6556 \\ \hline
+Absolute QE & 0.7191 & 0.7170 \\ \hline
+Relative QE & 0.7191 & 0.7170 \\ \hline
 \end{tabular}
 \end{table}
 
@@ -133,7 +148,7 @@ PLM & 0.6081 & 0.5439 \\ \hline
 
 As mentioned in the Results, our different methods for preprocessing did not have a significant impact on MAP and R-precision scores. 
 
-First of all, the lemmatization and either stemming algorithm used did not make any difference for either query. This was not surprising considering the queries are stemmed in the same way: "sustain ecosytem" and "air guitar textil sensor". Likely the size of the index is different, but  
+First of all, the lemmatization and either stemming algorithm used did not make any difference for either query. This was not surprising considering the queries are stemmed in the same way: "sustain ecosytem" and "air guitar textil sensor". 
 
 Removing stopwords also had little to no effect (see Table 1 and Table 2). Of course, our queries did not contain any stopwords, so the only influence removing stopwords might have is on the length of documents, which is used in calculating the score with TF-IDF. 
 
@@ -142,11 +157,14 @@ Removing stopwords also had little to no effect (see Table 1 and Table 2). Of co
 As can be seen from Table 3 and Table 4, the results using a PLM are worse than TF-IDF and BM-25 for both queries. Which retrieval method was best, depended on the query.
 
 Somewhat disappointingly, PLM did not achieve a great result. It is not entirely certain what the reason is, but we suspect that the size of the dataset was not sufficient for a proper Language Model. Our collection is a subset of the true collection, but it does contain all the relevant documents for each query. This means that there are a relatively large amount of relevant documents, which favors BM25 and TFIDF. As they are more easily "confused" by large datasets, while PLM could thrive in a situation with less relevant documents.
-%Expand more here?
+
+The word vector model achieved remarkably high scores for both queries, highlighting that a simple frequency count can already prove effective.
+
+The query expansion worsened the results slightly for TF-IDF. One possible reason is that the data for the query expansion was not only the same data as we retrieve from (an external collection is preferable), but also that the used collection was quite small. this limited the number of relevant documents to select expansion terms from, which resulted in mostly unrelated expansion terms.
 
 \section*{Conclusion}
 
-Our results suggest that the chosen model is more important than the preprocessing method of the document collection. For our queries and document collection, BM-25 and TF-IDF outperformed PLM. The successfulness of a model seems to depend largely on the query and possibly also on the type and size document collection. Therefore, we can not make solid conclusions without more testing and different datasets. We can, however, conclude that simple algorithms (TF-IDF) that are trivial to implement, 
+Our results suggest that the chosen model is more important than the preprocessing method of the document collection. For our queries and document collection, BM-25 and TF-IDF and a word vector model for frequency counts outperformed PLM. The successfulness of a model seems to depend largely on the query and possibly also on the type and size document collection. Therefore, we can not make solid conclusions without more testing and different datasets. We can, however, conclude that simple algorithms (TF-IDF) that are trivial to implement, achieve acceptable scores even for a small dataset and are not easily improved upon.
 
 \bibliographystyle{amsplain}
 \bibliography{ir}
