@@ -44,8 +44,8 @@ With $k$ and $b$ parameters set to k = 1.5, b = 0.75, as suggested by \cite{robe
 Parsimonious Language modeling is based on iteratively re-estimating term probability $P(t|D)$ using Expectation Maximization:
 
 \begin{align*}
-e_t = tf(t,D)\frac{\lambda P(t|D)}{(1-\lambda)P(t|C)+\lambda P(t|D)} \\
-P(t|D) = \frac{e_t}{\sum_t e_t}
+e_t &= tf(t,D)\frac{\lambda P(t|D)}{(1-\lambda)P(t|C)+\lambda P(t|D)} \\
+P(t|D) &= \frac{e_t}{\sum_t e_t}
 \end{align*}
 In our experiments, we set parameter $\lambda = 0.5$ and perform ten of these iterative steps.\\ \\
 For retrieving the ordered list of relevant documents for query $R$, the cross-entropy is calculated using $P(t|D)$ and $P(t|R)$, which are acquired through EM:
@@ -55,7 +55,14 @@ H(R,D) = -\sum_t P(t|R)\cdot log\big( \ (1-\lambda)P(t|C)+\lambda P(t|D) \ \big)
 
 \subsection*{Word Vectors}
 
-In this retrieval model, we define the score of a document and query as the cosine distance between their vector representations. Each element of a vector representation is the frequency of the corresponding word in the document or query. A vector thus has the length of the size of the preprocessed vocabulary. Effectively, this retrieval system is therefore a frequency count with a different structure.
+In this retrieval model, we define the score of a document and query as the cosine similarity between their vector representations. Each element of a vector representation is the frequency of the corresponding word in the document or query. A vector thus has the length of the size of the preprocessed vocabulary. Effectively, this retrieval system is therefore a frequency count with a different structure.
+
+The cosine similarity between vectors $A$ and $B$ is the cosine of their angle $\theta$, and is defined as follows:
+
+\begin{align*}
+\text{similarity}(A,B) = \cos(\theta) = {A \cdot B \over \|A\| \|B\|} 
+\end{align*}
+
 
 \subsection*{Query Expansion}
 In query expansion, an attempt is made to expand the query with words that are similar to the query according to some measure. In our implementation, first the top $n$ documents for the query are selected using the defined retrieval model. Next, the $m$ most frequent tokens in the returned documents are selected to add to the original query for re-evaluation of the scores. The frequency of a token in the relevant documents can be normalized for the length of each of the top $n$ documents. We therefore have two measures:
